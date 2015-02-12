@@ -1,0 +1,4 @@
+{
+    "MainClass": ["Coa Car","@TestClass","@AnotherTestClass"],
+    "TestClass": ["@AnotherTestClass"]
+}
