@@ -34,8 +34,8 @@ class MainClass {
 
 include 'D:\\php\\di\\System\\Di.php';
 
-$di = System\Di::instance();
-$di2 = System\Di::instance();
+$di = System\Di::getInstance();
+$di2 = System\Di::getInstance();
 
 $m = $di->get('MainClass');
 
