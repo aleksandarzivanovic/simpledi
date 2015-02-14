@@ -13,6 +13,13 @@ class Di implements DiInterface {
     /** @var array */
     protected $_diContainer = array();
 
+    /** @var array() */
+    private $_placeholders = array(
+	'@' => true,
+	'%' => true,
+	'#' => true,
+    );
+
     /**
      * 
      * @throws \RuntimeException
@@ -58,15 +65,19 @@ class Di implements DiInterface {
 	    return $this->loadedInstances[$class];
 	}
 
-	$classReflection = $this->validateClass($class);
-	$loadDependencies = true;
+	$alias = $class;
 
 	if (empty($this->_diContainer[$class]) || false == is_array($this->_diContainer)) {
 	    $loadDependencies = false;
+	} else {
+	    $loadDependencies = true;
+	    $class = $this->_diContainer[$alias]['class'];
 	}
 
+	$classReflection = $this->validateClass($class);
+
 	$instance = $this->instanceClass(
-		$classReflection, $singleton, $loadDependencies
+		$classReflection, $alias, $singleton, $loadDependencies
 	);
 
 	return $instance;
@@ -80,51 +91,23 @@ class Di implements DiInterface {
      * @return object
      */
     private function instanceClass(
-    \ReflectionClass $classReflection, $singleton = true, $loadDependencies = true
+    \ReflectionClass $classReflection, $alias, $singleton = true, $loadDependencies = true
     ) {
-	$class = $classReflection->getName();
 	$arguments = array();
 
 	if ($loadDependencies) {
 	    $arguments = $this->loadDependencies(
-		    $class, $singleton
+		    $alias, $singleton
 	    );
 	}
 
 	$instance = $classReflection->newInstanceArgs($arguments);
 
 	if ($singleton) {
-	    $this->loadedInstances[$class] = $instance;
+	    $this->loadedInstances[$alias] = $instance;
 	}
 
 	return $instance;
-    }
-
-    /**
-     * 
-     * @param string $class
-     * @param bool $singleton
-     * @return array
-     */
-    private function loadDependencies($class, $singleton = true) {
-	$arguments = array();
-
-	foreach ($this->_diContainer[$class] as $dependency) {
-	    if (0 !== strpos($dependency, '@')) {
-		$arguments[] = $dependency;
-		continue;
-	    }
-
-	    $dependency = substr($dependency, 1);
-
-	    if ($singleton) {
-		$arguments[] = $this->get($dependency);
-	    } else {
-		$arguments[] = clone $this->get($dependency, false);
-	    }
-	}
-
-	return $arguments;
     }
 
     /**
@@ -135,7 +118,7 @@ class Di implements DiInterface {
      */
     private function validateClass($class) {
 	if (true == empty($class)) {
-	    throw new \RuntimeException("Invalid class name");
+	    throw new \RuntimeException("Class name empty");
 	}
 
 	if (false == class_exists($class)) {
@@ -149,6 +132,72 @@ class Di implements DiInterface {
 	}
 
 	return $reflection;
+    }
+
+    /**
+     * @param string $class
+     * @return string|null
+     */
+    public function getClassAlias($class) {
+	foreach ($this->_diContainer as $alias => $classDefinition) {
+	    if ($class == $classDefinition['class']) {
+		return $alias;
+	    }
+	}
+
+	return null;
+    }
+
+    /**
+     * 
+     * @param string $class
+     * @param bool $singleton
+     * @return array
+     */
+    private function loadDependencies($class, $singleton = true) {
+	$arguments = array();
+
+	foreach ($this->_diContainer[$class]['arguments'] as $dependency) {
+	    $dependency = $this->parseDependency($dependency);
+
+	    if (is_array($dependency)) {
+		$arguments[] = $dependency[0];
+		continue;
+	    }
+
+	    if ($singleton) {
+		$arguments[] = $this->get($dependency);
+	    } else {
+		$arguments[] = clone $this->get($dependency, false);
+	    }
+	}
+
+	return $arguments;
+    }
+
+    /**
+     * @param string $dependency
+     * @return string
+     * @throws \RuntimeException
+     */
+    private function parseDependency($dependency) {
+	$placeholder = $dependency[0];
+
+	if (false == isset($this->_placeholders[$placeholder])) {
+	    if (false == isset($this->_diContainer[$dependency])) {
+		throw new \RuntimeException("Class alias {$dependency} not found");
+	    }
+
+	    $class = $dependency;
+	} else if (0 === strpos($dependency, '#')) {
+	    $class = trim($dependency, '#');
+	    return array($class);
+	} else if (0 === strpos($dependency, '@')) {
+	    $dependency = trim($dependency, '@');
+	    $class = $dependency;
+	}
+
+	return $class;
     }
 
 }
