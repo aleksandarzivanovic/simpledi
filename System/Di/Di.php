@@ -1,10 +1,10 @@
 <?php
 
-namespace System;
+namespace System\Di;
 
-class Di {
+class Di implements DiInterface {
 
-    /** @var System\Di */
+    /** @var Di */
     private static $instance;
 
     /** @var  array() */
@@ -28,30 +28,30 @@ class Di {
     }
 
     /**
-     * @return \Di
+     * @return Di
      */
-    public static function instance() {
-	if (false == self::$instance) {
-	    self::$instance = new self;
+    public static function getInstance() {
+	if (false == static::$instance) {
+	    static::$instance = new static;
 	}
 
-	return self::$instance;
+	return static::$instance;
     }
 
     /**
-     * @return \Di|$this
+     * @return Di
      */
     public function reload() {
-	self::$instance = false;
+	static::$instance = false;
 
-	return self::instance();
+	return static::getInstance();
     }
 
     /**
      * 
      * @param string $class
      * @param bool $singleton
-     * @return mixed
+     * @return object
      */
     public function get($class, $singleton = true) {
 	if ($singleton && isset($this->loadedInstances[$class])) {
@@ -77,7 +77,7 @@ class Di {
      * @param ReflectionClass $classReflection
      * @param bool $singleton
      * @param bool $loadDependencies
-     * @return mixed
+     * @return object
      */
     private function instanceClass(
     \ReflectionClass $classReflection, $singleton = true, $loadDependencies = true

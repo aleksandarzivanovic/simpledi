@@ -32,10 +32,11 @@ class MainClass {
 
 }
 
-include 'D:\\php\\di\\System\\Di.php';
+include 'System/Di/DiInterface.php';
+include 'System/Di/Di.php';
 
-$di = System\Di::instance();
-$di2 = System\Di::instance();
+$di = System\Di\Di::getInstance();
+$di2 = System\Di\Di::getInstance();
 
 $m = $di->get('MainClass');
 
