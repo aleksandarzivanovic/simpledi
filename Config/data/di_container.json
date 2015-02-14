@@ -1,4 +1,10 @@
 {
-    "MainClass": ["Coa Car","@TestClass","@AnotherTestClass"],
-    "TestClass": ["@AnotherTestClass"]
+    "class.main": {
+	"class": "MainClass",
+	"arguments": ["#Coa Car", "class.test", "@AnotherTestClass"]
+    },
+    "class.test": {
+	"class": "TestClass",
+	"arguments": ["@AnotherTestClass"]
+    }
 }
