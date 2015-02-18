@@ -1,0 +1,5 @@
+{
+    "System\\Di\\DiInterface": "Systen\\Di\\Di",
+    "System\\Http\\Method\\MethodInterface": "System\\Http\\Method\\MethodInterface",
+    "System\\Http\\RequestInterface\\RequestInterface": "System\\Http\\Request\\Request"
+}
