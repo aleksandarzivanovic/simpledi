@@ -84,15 +84,23 @@ class Di implements DiInterface {
             $file = str_replace('\\', '/', $class) . '.php';
         }
 
+        $this->lazyLoad($file);
         $classReflection = $this->validateClass($class);
-
-        require_once $file;
 
         $instance = $this->instanceClass(
                 $classReflection, $alias, $singleton, $loadDependencies
         );
 
         return $instance;
+    }
+
+    private function lazyLoad($fileName) {
+        try {
+            var_dump('Loading...', $fileName);
+            require_once $fileName;
+        } catch (\Exception $ex) {
+            //var_dump($ex->getMessage());
+        }
     }
 
     /**
@@ -144,13 +152,11 @@ class Di implements DiInterface {
             throw new \RuntimeException("Class {$class} is not instantiable");
         }
 
-
-
         return $reflection;
     }
 
     private function loadInterfaces(array $interfaces = array()) {
-        foreach ($interfaces as $interface) {            
+        foreach ($interfaces as $interface) {
             $file = str_replace('\\', '/', $interface) . '.php';
             require_once $file;
         }

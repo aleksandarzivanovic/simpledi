@@ -1,7 +1,7 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display-errors', true);
-ini_set('display_errors', true);
+//error_reporting(E_ALL);
+//ini_set('display-errors', true);
+//ini_set('display_errors', true);
 
 include 'System/Di/DiInterface.php';
 include 'System/Di/Di.php';

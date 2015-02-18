@@ -33,8 +33,8 @@ class RequestFactory {
         $this->post = filter_input_array(INPUT_POST);
         $this->cookie = filter_input_array(INPUT_COOKIE);
         $this->env = filter_input_array(INPUT_ENV);
-        $this->request = filter_input_array(INPUT_REQUEST);
-        $this->session = filter_input_array(INPUT_SESSION);
+        //$this->request = filter_input_array(INPUT_REQUEST);
+        //$this->session = filter_input_array(INPUT_SESSION);
         $this->server = filter_input_array(INPUT_SERVER);
         $this->files = $_FILES;
     }    
