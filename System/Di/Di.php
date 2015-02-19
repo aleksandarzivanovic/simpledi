@@ -84,7 +84,6 @@ class Di implements DiInterface {
             $file = str_replace('\\', '/', $class) . '.php';
         }
 
-        $this->lazyLoad($file);
         $classReflection = $this->validateClass($class);
 
         $instance = $this->instanceClass(
@@ -92,15 +91,6 @@ class Di implements DiInterface {
         );
 
         return $instance;
-    }
-
-    private function lazyLoad($fileName) {
-        try {
-            var_dump('Loading...', $fileName);
-            require_once $fileName;
-        } catch (\Exception $ex) {
-            //var_dump($ex->getMessage());
-        }
     }
 
     /**
@@ -142,7 +132,6 @@ class Di implements DiInterface {
         }
 
         $reflection = new \ReflectionClass($class);
-        $this->loadInterfaces($reflection->getInterfaceNames());
 
         if (false == class_exists($class)) {
             throw new \RuntimeException("Class {$class} not found");
@@ -153,13 +142,6 @@ class Di implements DiInterface {
         }
 
         return $reflection;
-    }
-
-    private function loadInterfaces(array $interfaces = array()) {
-        foreach ($interfaces as $interface) {
-            $file = str_replace('\\', '/', $interface) . '.php';
-            require_once $file;
-        }
     }
 
     /**

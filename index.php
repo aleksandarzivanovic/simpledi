@@ -1,15 +1,8 @@
 <?php
-//error_reporting(E_ALL);
-//ini_set('display-errors', true);
-//ini_set('display_errors', true);
-
-include 'System/Di/DiInterface.php';
-include 'System/Di/Di.php';
-
-include 'System/Http/Request/RequestInterface.php';
-include 'System/Http/Request/Request.php';
-
-
+spl_autoload_register(function($class) {
+    $file = str_replace('\\', '/', $class) . '.php';
+    require_once $file;
+});
 
 $di = System\Di\Di::getInstance();
 
