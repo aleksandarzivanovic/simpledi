@@ -4,18 +4,14 @@ namespace System\Http\Request;
 
 use System\Http\Method\MethodInterface;
 
-class Request implements RequestInterface {
+class Request extends RequestFactory implements RequestInterface {
 
     /** @var MethodInterface */
     protected $method;
-    
-    /** @var RequestFactory */
-    protected $requestFactory;
 
-
-    public function __construct(RequestFactory $requestFactory, MethodInterface $method) {
+    public function __construct(MethodInterface $method) {
+        parent::__construct();
         $this->method = $method;
-        $this->requestFactory = $requestFactory;
     }
 
     public function getHeader($header) {
