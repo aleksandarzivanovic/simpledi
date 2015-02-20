@@ -1,6 +1,6 @@
 {
     "system.http.method": {
-        "class": "System\\Http\\Method\\Method",
+        "class": "System\\Http\\Request\\Method\\Method",
         "arguments": []
     },
     "system.http.request": {
@@ -9,8 +9,5 @@
     },
     "system.http.request.request_factory": {
         "class": "System\\Http\\Request\\RequestFactory"
-    },
-    "system.http.response": {
-        "class": "System\\Http\\Response\\"
     }
 }

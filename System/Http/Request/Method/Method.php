@@ -1,31 +1,25 @@
 <?php
 
-namespace System\Http\Method;
+namespace System\Http\Request\Method;
 
 class Method implements MethodInterface {
 
-    const GET = 'GET';
-    const POST = 'POST';
-    const PUT = 'PUT';
-    const DELETE = 'DELETE';
-    const NONE = 'NONE';
-
     /** @var string */
-    private $currentMethod = self::NONE;
+    private $currentMethod = MethodInterface::METHOD_NONE;
 
     /** @var array */
     private $_acceptedMethdos = array(
-        self::GET => true,
-        self::POST => true,
-        self::PUT => true,
-        self::DELETE => true,
+        MethodInterface::METHOD_GET => true,
+        MethodInterface::METHOD_POST => true,
+        MethodInterface::METHOD_PUT => true,
+        MethodInterface::METHOD_DELETE => true,
     );
 
     /**
      * 
      * @param string $method
      */
-    public function __construct($method = self::GET) {
+    public function __construct($method) {
         $this->factory($method);
     }
 
@@ -42,7 +36,7 @@ class Method implements MethodInterface {
      * @return bool|mixed
      */
     public function isGet(callable $callback = null, array $arguments = array()) {
-        return $this->isType(static::GET, $callback, $arguments);
+        return $this->isType(MethodInterface::METHOD_GET, $callback, $arguments);
     }
 
     /**
@@ -51,7 +45,7 @@ class Method implements MethodInterface {
      * @return bool|mixed
      */
     public function isPost(callable $callback = null, array $arguments = array()) {
-        return $this->isType(static::POST, $callback, $arguments);
+        return $this->isType(MethodInterface::METHOD_POST, $callback, $arguments);
     }
 
     /**
@@ -60,7 +54,7 @@ class Method implements MethodInterface {
      * @return bool|mixed
      */
     public function isPut(callable $callback = null, array $arguments = array()) {
-        return $this->isType(static::PUT, $callback, $arguments);
+        return $this->isType(MethodInterface::METHOD_PUT, $callback, $arguments);
     }
 
     /**
@@ -69,7 +63,7 @@ class Method implements MethodInterface {
      * @return bool|mixed
      */
     public function isDelete(callable $callback = null, array $arguments = array()) {
-        return $this->isType(static::DELETE, $callback, $arguments);
+        return $this->isType(MethodInterface::METHOD_DELETE, $callback, $arguments);
     }
 
     /**
