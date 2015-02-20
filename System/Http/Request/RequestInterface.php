@@ -2,7 +2,7 @@
 
 namespace System\Http\Request;
 
-use System\Http\Method\MethodInterface;
+use System\Http\Request\Method\MethodInterface;
 
 interface RequestInterface {
 
@@ -27,12 +27,12 @@ interface RequestInterface {
 	 * @param string $method
 	 * @return string|array|object|null
 	 */
-	public function getRequestData($data, $method);
+	public function getRequestData($data, MethodInterface $method);
 
 	/**
 	 * 
 	 * @param string $method
 	 * @return array
 	 */
-	public function getRequestDataArray($method);
+	public function getRequestDataArray(MethodInterface $method);
 }

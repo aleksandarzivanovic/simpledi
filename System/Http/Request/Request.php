@@ -3,46 +3,75 @@
 namespace System\Http\Request;
 
 use System\Http\Request\Method\MethodInterface;
+use System\Http\Header\HeaderInterface;
 
 class Request extends RequestFactory implements RequestInterface {
 
-	/** @var MethodInterface */
-	protected $method;
+    /** @var MethodInterface */
+    protected $method;
 
-	public function __construct(MethodInterface $method) {
-		parent::__construct();
-		$this->method = $method;
-	}
+    /** @var HeaderInterface */
+    protected $header;
 
-	public function getHeader($header) {
-		
-	}
+    /**
+     * @param MethodInterface $method
+     */
+    public function __construct(MethodInterface $method, HeaderInterface $header) {
+        parent::__construct();
 
-	public function getHeaders() {
-		
-	}
+        $this->method = $method;
+        $this->header = $header;
+    }
 
-	public function getMethod() {
-		return $this->method;
-	}
+    /**
+     * @param string $header
+     * @return string
+     */
+    public function getHeader($header) {
+        return $this->header->getHeader($header);
+    }
 
-	public function getRequestData($data, $method) {
-		$values = $this->getRequestDataArray($method);
+    /**
+     * @return array
+     */
+    public function getHeaders() {
+        return $this->header->getHeaders();
+    }
 
-		return (isset($values[$data]) ? $values[$data] : null);
-	}
+    /**
+     * @return MethodInterface
+     */
+    public function getMethod() {
+        return $this->method;
+    }
 
-	public function getRequestDataArray($method) {
-		switch ($method) {
-			case MethodInterface::METHOD_GET:
-				return $this->get;
-			case MethodInterface::METHOD_POST:
-			case MethodInterface::METHOD_PUT:
-			case MethodInterface::METHOD_DELETE:
-				return $this->post;
-			default:
-				throw new \RuntimeException("Undefined method {$method}");
-		}
-	}
+    /**
+     * 
+     * @param string $data
+     * @param MethodInterface $method
+     * @return string|null
+     */
+    public function getRequestData($data, MethodInterface $method) {
+        $values = $this->getRequestDataArray($method);
+
+        return (isset($values[$data]) ? $values[$data] : null);
+    }
+
+    /**
+     * 
+     * @param MethodInterface $method
+     * @return array
+     * @throws \RuntimeException
+     */
+    public function getRequestDataArray(MethodInterface $method) {
+        switch ($method->getMethod()) {
+            case MethodInterface::METHOD_GET:
+                return $this->get;
+            case MethodInterface::METHOD_POST:
+            case MethodInterface::METHOD_PUT:
+            case MethodInterface::METHOD_DELETE:
+                return $this->post;
+        }
+    }
 
 }

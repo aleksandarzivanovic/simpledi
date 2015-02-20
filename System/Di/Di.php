@@ -65,7 +65,7 @@ class Di implements DiInterface {
      * @param  bool   $singleton
      * @return object
      */
-    public function get($class, $singleton = true) {
+    public function get($class, $singleton = true, array $customArgs = array()) {
         if ($singleton && isset($this->loadedInstances[$class])) {
             return $this->loadedInstances[$class];
         }
@@ -87,7 +87,7 @@ class Di implements DiInterface {
         $classReflection = $this->validateClass($class);
 
         $instance = $this->instanceClass(
-                $classReflection, $alias, $singleton, $loadDependencies
+                $classReflection, $alias, $singleton, $loadDependencies, $customArgs
         );
 
         return $instance;
@@ -101,14 +101,17 @@ class Di implements DiInterface {
      * @return object
      */
     private function instanceClass(
-    \ReflectionClass $classReflection, $alias, $singleton = true, $loadDependencies = true
+    \ReflectionClass $classReflection, $alias, $singleton = true, $loadDependencies = true, array $customArgs = array()
     ) {
         $arguments = array();
 
-        if ($loadDependencies) {
+        if ($loadDependencies && empty($customArgs)) {
             $arguments = $this->loadDependencies(
                     $alias, $singleton
             );
+        } else {
+
+            $arguments = $customArgs;
         }
 
         $instance = $classReflection->newInstanceArgs($arguments);
@@ -195,24 +198,38 @@ class Di implements DiInterface {
      * @throws \RuntimeException
      */
     private function parseDependency($dependency) {
+        $classMethod = explode('::', $dependency);
+
+        $class = $classMethod[0];
+        $method = empty($classMethod[1]) ? null : $classMethod[1];
+
         $placeholder = $dependency[0];
 
         if (false == isset($this->_placeholders[$placeholder])) {
-            if (false == isset($this->_diContainer[$dependency])) {
-                throw new \RuntimeException("Class alias {$dependency} not found");
+            if (false == isset($this->_diContainer[$class])) {
+                throw new \RuntimeException("Class alias {$class} not found");
             }
 
-            $class = $dependency;
+            $class = $classMethod[0];
         } elseif (0 === strpos($dependency, '#')) {
             $class = trim($dependency, '#');
 
             return array($class);
         } elseif (0 === strpos($dependency, '@')) {
-            $dependency = trim($dependency, '@');
-            $class = $dependency;
+            $class = trim($classMethod[0], '@');
+        }
+
+        if (null !== $method) {
+            $class = $this->callMethod($class, $method);
         }
 
         return $class;
+    }
+
+    private function callMethod($class, $method) {
+        $object = $this->get($class);
+
+        return array(call_user_method($method, $object));
     }
 
 }

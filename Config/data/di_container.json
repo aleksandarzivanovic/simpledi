@@ -1,13 +1,17 @@
 {
-    "system.http.method": {
+    "system.http.request.method": {
         "class": "System\\Http\\Request\\Method\\Method",
-        "arguments": []
+        "arguments": ["system.http.request.request_factory"]
     },
     "system.http.request": {
         "class": "System\\Http\\Request\\Request",
-        "arguments": ["system.http.method"]
+        "arguments": ["system.http.request.method", "system.http.header"]
     },
     "system.http.request.request_factory": {
         "class": "System\\Http\\Request\\RequestFactory"
+    },
+    "system.http.header": {
+        "class": "System\\Http\\Header\\Header",
+        "arguments": ["system.http.request.request_factory"]
     }
 }

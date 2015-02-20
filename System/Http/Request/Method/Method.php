@@ -2,6 +2,8 @@
 
 namespace System\Http\Request\Method;
 
+use System\Http\Request\RequestFactory;
+
 class Method implements MethodInterface {
 
     /** @var string */
@@ -17,10 +19,10 @@ class Method implements MethodInterface {
 
     /**
      * 
-     * @param string $method
+     * @param RequestFactory $requestFactory
      */
-    public function __construct($method) {
-        $this->factory($method);
+    public function __construct(RequestFactory $requestFactory) {
+        $this->factory($requestFactory->getRequestMethod());
     }
 
     /**
@@ -93,7 +95,7 @@ class Method implements MethodInterface {
             throw new \RuntimeException('Method may not be empty');
         }
 
-        if (false == isset($this->_acceptedMethdos)) {
+        if (false == isset($this->_acceptedMethdos[$method])) {
             throw new \RuntimeException("Invalid method {$method}");
         }
 

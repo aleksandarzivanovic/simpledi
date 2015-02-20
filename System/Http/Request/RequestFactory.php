@@ -2,7 +2,9 @@
 
 namespace System\Http\Request;
 
-abstract class RequestFactory {
+use System\Http\Request\Method\MethodInterface;
+
+class RequestFactory {
 
     /** @var array|null */
     protected $get;
@@ -29,5 +31,12 @@ abstract class RequestFactory {
         $this->env = filter_input_array(INPUT_ENV);
         $this->server = filter_input_array(INPUT_SERVER);
         $this->files = $_FILES;
-    }    
+    }
+    
+    /**
+     * @return string
+     */
+    public function getRequestMethod() {
+        return isset($this->server['REQUEST_METHOD']) ? $this->server['REQUEST_METHOD'] : MethodInterface::METHOD_NONE;
+    }
 }
