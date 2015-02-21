@@ -63,7 +63,6 @@ class Di implements DiInterface {
      *
      * @param  string $class
      * @param  bool   $singleton
-     * @return object
      */
     public function get($class, $singleton = true, array $customArgs = array()) {
         if ($singleton && isset($this->loadedInstances[$class])) {
@@ -229,7 +228,7 @@ class Di implements DiInterface {
     private function callMethod($class, $method) {
         $object = $this->get($class);
 
-        return array(call_user_method($method, $object));
+        return array(call_user_func(array($object, $method)));
     }
 
 }

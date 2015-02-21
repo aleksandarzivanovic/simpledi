@@ -1,7 +1,7 @@
 {
     "system.http.request.method": {
         "class": "System\\Http\\Request\\Method\\Method",
-        "arguments": ["system.http.request.request_factory"]
+        "arguments": ["system.http.request.request_factory::getRequestMethod"]
     },
     "system.http.request": {
         "class": "System\\Http\\Request\\Request",
@@ -11,7 +11,6 @@
         "class": "System\\Http\\Request\\RequestFactory"
     },
     "system.http.header": {
-        "class": "System\\Http\\Header\\Header",
-        "arguments": ["system.http.request.request_factory"]
+        "class": "System\\Http\\Header\\Header"
     }
 }

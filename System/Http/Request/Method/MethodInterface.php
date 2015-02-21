@@ -42,4 +42,10 @@ interface MethodInterface {
 	 * @return bool|mixed
 	 */
 	public function isDelete(callable $callback = null, array $arguments = array());
+
+	/**
+	 * @param string $method
+	 * @return MethodInterface|$this
+	 */
+	public function setMethod($method);
 }

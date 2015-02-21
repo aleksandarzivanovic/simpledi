@@ -2,40 +2,46 @@
 
 namespace System\Http\Header;
 
-use System\Http\Request\RequestFactory;
-
 class Header implements HeaderInterface {
-    
-    private $requestFactory;
-    
-    public function __construct(RequestFactory $requestFactory) {
-        $this->requestFactory = $requestFactory;
-    }
 
-    /**
-     * 
-     * @param string $header
-     * @return string|array|null
-     */
-    public function getHeader($header) {
-        
-    }
+	/** @var array */
+	private $headers;
 
-    /**
-     * @return string
-     */
-    public function getHeaders() {
-        
-    }
+	public function __construct() {
+		$this->headers = array_change_key_case(getallheaders());
+	}
 
-    /**
-     * 
-     * @param string $header
-     * @param string|array $value
-     * @return HeaderInterface|$this
-     */
-    public function setHeader($header, $value) {
-        
-    }
+	/**
+	 * 
+	 * @param string $header
+	 * @return string|array|null
+	 */
+	public function getHeader($header) {
+		if (isset($this->headers[$header])) {
+			return $this->headers[$header];
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHeaders() {
+		return $this->headers;
+	}
+
+	/**
+	 * 
+	 * @param string $header
+	 * @param string|array $value
+	 * @return HeaderInterface|$this
+	 */
+	public function setHeader($header, $value) {
+		$lowCaseHeader = strtolower($header);
+		$this->headers[$lowCaseHeader] = $value;
+
+		return $this;
+	}
 
 }
