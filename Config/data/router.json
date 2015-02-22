@@ -1,9 +1,3 @@
 {
-    "/users/show/{id}" : {
-        "file": "path/to/app/get/post/put/delete/any.php",
-        "arguments": [
-            "@Namespace\\To\\Class",
-            "class.alias"
-        ]
-    }
+    "/users/profile/{id}/{action}": "Controllers/ResponseControllers/Users.php"
 }

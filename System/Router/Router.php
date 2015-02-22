@@ -30,7 +30,7 @@ class Router implements RouterInterface {
 	public function add($route, $method, callable $callback) {
 		list($regex, $parameters) = $this->parseRoute($route);
 
-		// filter method parameter
+		// validate method
 		Di::getInstance()->get('system.http.request.method', false, array($method));
 
 		if (isset($this->routes[$method][$regex])) {
@@ -41,6 +41,28 @@ class Router implements RouterInterface {
 			'response' => $callback,
 			'parameters' => $parameters,
 		);
+	}
+
+	/**
+	 * 
+	 * @return $this|null
+	 * @throws \RuntimeException
+	 */
+	public function loadController() {
+		$map = json_decode(file_get_contents('Config/data/router.json'), true);
+		$method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
+		$requestRoute = trim($this->request->getRequestData('route', $method), '/');
+
+		foreach ($map as $route => $file) {
+			list($regex) = $this->parseRoute($route);
+
+			if ($this->matchRoute($regex, $requestRoute)) {
+				require_once $file;
+				return $this;
+			}
+		}
+
+		throw new \RuntimeException("Route {$requestRoute} not found.");
 	}
 
 	/**
@@ -58,14 +80,15 @@ class Router implements RouterInterface {
 		foreach ($this->routes[$requestMethod] as $regex => $value) {
 			preg_match_all('/' . $regex . '$/', $route, $matches);
 
-			if (false == empty($matches[0])) {
+
+			if ($this->matchRoute($regex, $route, $matches)) {
 				$callback = $value['response'];
 				unset($matches[0]);
 				break;
 			}
 		}
 
-		if (empty($matches[1][0]) || false == is_callable($callback)) {
+		if (false == is_callable($callback)) {
 			throw new \RuntimeException("Route {$route} not found.");
 		}
 
@@ -83,6 +106,9 @@ class Router implements RouterInterface {
 	 */
 	private function callCallback(callable $callback, array $parameters = array()) {
 		$reflectiton = new \ReflectionFunction($callback);
+		$response = Di::getInstance()->get('system.http.response');
+		array_unshift($parameters, $response);
+
 		$return = $reflectiton->invokeArgs($parameters);
 
 		if (false == $return instanceof \System\Http\Response\ResponseInterface) {
@@ -131,6 +157,19 @@ class Router implements RouterInterface {
 			implode('\/', $regex),
 			$parameters,
 		);
+	}
+
+	/**
+	 * 
+	 * @param string $regex
+	 * @param string $route
+	 * @param array $matches
+	 * @return bool
+	 */
+	private function matchRoute($regex, $route, array &$matches = array()) {
+		preg_match_all('/' . $regex . '$/', $route, $matches);
+
+		return false == empty($matches[0]);
 	}
 
 }

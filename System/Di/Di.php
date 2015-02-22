@@ -12,7 +12,6 @@ class Di implements DiInterface {
 
     /** @var array */
     protected $_diContainer = array();
-    protected $_interfaceLinker = array();
 
     /** @var array() */
     private $_placeholders = array(
@@ -31,9 +30,6 @@ class Di implements DiInterface {
         try {
             $containerJson = file_get_contents('Config/data/di_container.json');
             $this->_diContainer = json_decode($containerJson, true);
-
-            $interfaceJson = file_get_contents('Config/data/di_interface_link.json');
-            $this->_interfaceLinker = json_decode($interfaceJson, true);
         } catch (\Exception $ex) {
             throw new \RuntimeException('Error while parsing .json data', 1, $ex);
         }
