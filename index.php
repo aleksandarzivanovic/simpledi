@@ -11,19 +11,41 @@ $di = System\Di\Di::getInstance();
 
 /* @var $request System\Http\Request\Request */
 $request = $di->get('system.http.request');
+
+/* @var $router System\Router\Router */
+$router = $di->get('system.router');
+
+$router->add('/test/{coa}/test', \System\Http\Request\Method\MethodInterface::METHOD_GET, function ($param1) {
+	echo 'Coa je ' . $param1 . '<br />';
+	return \System\Di\Di::getInstance()->get("system.http.response");
+});
+
+
+$router->add('/test/{coa}/test2/{pera}', \System\Http\Request\Method\MethodInterface::METHOD_GET, function ($coa, $pera) {
+	echo 'Coa je ' . $coa . '<br />';
+	echo 'Pera je ' . $pera . '<br />';
+
+	return \System\Di\Di::getInstance()->get("system.http.response");
+});
+
+$router->run();
+
+/* @var $method MethodInterface */
 $method = $request->getMethod();
 
 // closures of isGet/Post/Put/Delete will always have Reqest as first and Response as second argument
 // all other argumets are optional and they depends on second parameter of isGet/Post/Put/Delete method
-$method->isGet(function($request, $name, $email) {
+$method->isGet(function($name, $email) {
 
 	/* @var $method \System\Http\Request\Method\MethodInterface */
 	// using false parameter to avoid executing of $method->isPost/Put/Delete closure (non-singleton)
 	$method = System\Di\Di::getInstance()->get('system.http.request.method', false);
 	$method->setMethod(\System\Http\Request\Method\MethodInterface::METHOD_GET);
-	
+
+	$request = \System\Di\Di::getInstance()->get('system.http.request');
+
 	$page = $request->getRequestData('page', $method);
-	
+
 	$method->setMethod(\System\Http\Request\Method\MethodInterface::METHOD_POST);
 	$postData = $request->getRequestDataArray($method);
 

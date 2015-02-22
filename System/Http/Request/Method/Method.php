@@ -5,7 +5,7 @@ namespace System\Http\Request\Method;
 class Method implements MethodInterface {
 
 	/** @var string */
-	private $currentMethod = MethodInterface::METHOD_NONE;
+	private $current = MethodInterface::METHOD_NONE;
 
 	/** @var array */
 	private $_acceptedMethdos = array(
@@ -27,7 +27,7 @@ class Method implements MethodInterface {
 	 * @return string
 	 */
 	public function getMethod() {
-		return $this->currentMethod;
+		return $this->current;
 	}
 
 	/**
@@ -74,12 +74,11 @@ class Method implements MethodInterface {
 	 * @return bool|mixed
 	 */
 	private function isType($type, callable $callback = null, array $arguments = array()) {
-		if ($type != $this->currentMethod) {
+		if ($type != $this->current) {
 			return false;
 		} else if (is_callable($callback)) {
 			$closure = new \ReflectionFunction($callback);
-			array_unshift($arguments, \System\Di\Di::getInstance()->get('system.http.request'));
-			
+
 			return $closure->invokeArgs($arguments);
 		} else {
 			return true;
@@ -99,7 +98,7 @@ class Method implements MethodInterface {
 			throw new \RuntimeException("Invalid method {$method}");
 		}
 
-		$this->currentMethod = $method;
+		$this->current = $method;
 	}
 
 	/**

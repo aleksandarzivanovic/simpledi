@@ -7,10 +7,17 @@
         "class": "System\\Http\\Request\\Request",
         "arguments": ["system.http.request.method", "system.http.header"]
     },
+    "system.http.response": {
+        "class": "System\\Http\\Response\\Response"
+    },
     "system.http.request.request_factory": {
         "class": "System\\Http\\Request\\RequestFactory"
     },
     "system.http.header": {
         "class": "System\\Http\\Header\\Header"
+    },
+    "system.router": {
+        "class": "System\\Router\\Router",
+        "arguments": ["system.http.request"]
     }
 }
