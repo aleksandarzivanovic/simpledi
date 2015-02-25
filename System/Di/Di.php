@@ -15,189 +15,216 @@ class Di implements DiInterface {
 
     /** @var array() */
     private $_placeholders = array(
-	'@' => true,
-	'%' => true,
-	'#' => true,
+        '@' => true,
+        '%' => true,
+        '#' => true,
     );
 
     /**
-     * 
+     *
      * @throws \RuntimeException
      */
     protected function __construct() {
-	try {
-	    $this->loadedInstances = array();
-	    $json = file_get_contents('Config/data/di_container.json');
-	    $this->_diContainer = json_decode($json, true);
-	} catch (\Exception $ex) {
-	    throw new \RuntimeException('di_container.json failed to parse', 1, $ex);
-	}
+        $this->loadedInstances = array();
+
+        try {
+            $containerJson = file_get_contents('Config/data/di_container.json');
+            $this->_diContainer = json_decode($containerJson, true);
+        } catch (\Exception $ex) {
+            throw new \RuntimeException('Error while parsing .json data', 1, $ex);
+        }
     }
 
     /**
      * @return Di
      */
     public static function getInstance() {
-	if (false == static::$instance) {
-	    static::$instance = new static;
-	}
+        if (false == static::$instance) {
+            static::$instance = new static();
+        }
 
-	return static::$instance;
+        return static::$instance;
     }
 
     /**
      * @return Di
      */
     public function reload() {
-	static::$instance = false;
+        static::$instance = false;
 
-	return static::getInstance();
+        return static::getInstance();
     }
 
     /**
-     * 
-     * @param string $class
-     * @param bool $singleton
-     * @return object
+     *
+     * @param  string $class
+     * @param  bool   $singleton
      */
-    public function get($class, $singleton = true) {
-	if ($singleton && isset($this->loadedInstances[$class])) {
-	    return $this->loadedInstances[$class];
-	}
+    public function get($class, $singleton = true, array $customArgs = array()) {
+        if ($singleton && isset($this->loadedInstances[$class])) {
+            return $this->loadedInstances[$class];
+        }
 
-	$alias = $class;
+        $alias = $class;
+        $loadDependencies = false;
 
-	if (empty($this->_diContainer[$class]) || false == is_array($this->_diContainer)) {
-	    $loadDependencies = false;
-	} else {
-	    $loadDependencies = true;
-	    $class = $this->_diContainer[$alias]['class'];
-	}
+        if (false == empty($this->_diContainer[$class]) && is_array($this->_diContainer)) {
+            $loadDependencies = true;
+            $class = $this->_diContainer[$alias]['class'];
+        }
 
-	$classReflection = $this->validateClass($class);
+        if (false == empty($this->_diContainer[$alias]['file'])) {
+            $file = $this->_diContainer[$alias]['file'];
+        } else {
+            $file = str_replace('\\', '/', $class) . '.php';
+        }
 
-	$instance = $this->instanceClass(
-		$classReflection, $alias, $singleton, $loadDependencies
-	);
+        $classReflection = $this->validateClass($class);
 
-	return $instance;
+        $instance = $this->instanceClass(
+                $classReflection, $alias, $singleton, $loadDependencies, $customArgs
+        );
+
+        return $instance;
     }
 
     /**
-     * 
-     * @param ReflectionClass $classReflection
-     * @param bool $singleton
-     * @param bool $loadDependencies
+     *
+     * @param  ReflectionClass $classReflection
+     * @param  bool            $singleton
+     * @param  bool            $loadDependencies
      * @return object
      */
     private function instanceClass(
-    \ReflectionClass $classReflection, $alias, $singleton = true, $loadDependencies = true
+    \ReflectionClass $classReflection, $alias, $singleton = true, $loadDependencies = true, array $customArgs = array()
     ) {
-	$arguments = array();
+        $arguments = array();
 
-	if ($loadDependencies) {
-	    $arguments = $this->loadDependencies(
-		    $alias, $singleton
-	    );
-	}
+        if ($loadDependencies && empty($customArgs)) {
+            $arguments = $this->loadDependencies(
+                    $alias, $singleton
+            );
+        } else {
 
-	$instance = $classReflection->newInstanceArgs($arguments);
+            $arguments = $customArgs;
+        }
 
-	if ($singleton) {
-	    $this->loadedInstances[$alias] = $instance;
-	}
+        $instance = $classReflection->newInstanceArgs($arguments);
 
-	return $instance;
+        if ($singleton) {
+            $this->loadedInstances[$alias] = $instance;
+        }
+
+        return $instance;
     }
 
     /**
-     * 
-     * @param string $class
+     *
+     * @param  string            $class
      * @return \ReflectionClass
      * @throws \RuntimeException
      */
     private function validateClass($class) {
-	if (true == empty($class)) {
-	    throw new \RuntimeException("Class name empty");
-	}
+        if (true == empty($class)) {
+            throw new \RuntimeException("Class name empty");
+        }
 
-	if (false == class_exists($class)) {
-	    throw new \RuntimeException("Class {$class} not found");
-	}
+        $reflection = new \ReflectionClass($class);
 
-	$reflection = new \ReflectionClass($class);
+        if (false == class_exists($class)) {
+            throw new \RuntimeException("Class {$class} not found");
+        }
 
-	if (false == $reflection->isInstantiable()) {
-	    throw new \RuntimeException("Class {$class} is not instantiable");
-	}
+        if (false == $reflection->isInstantiable()) {
+            throw new \RuntimeException("Class {$class} is not instantiable");
+        }
 
-	return $reflection;
+        return $reflection;
     }
 
     /**
-     * @param string $class
+     * @param  string      $class
      * @return string|null
      */
     public function getClassAlias($class) {
-	foreach ($this->_diContainer as $alias => $classDefinition) {
-	    if ($class == $classDefinition['class']) {
-		return $alias;
-	    }
-	}
+        foreach ($this->_diContainer as $alias => $classDefinition) {
+            if ($class == $classDefinition['class']) {
+                return $alias;
+            }
+        }
 
-	return null;
+        return;
     }
 
     /**
-     * 
-     * @param string $class
-     * @param bool $singleton
+     *
+     * @param  string $class
+     * @param  bool   $singleton
      * @return array
      */
     private function loadDependencies($class, $singleton = true) {
-	$arguments = array();
+        $arguments = array();
 
-	foreach ($this->_diContainer[$class]['arguments'] as $dependency) {
-	    $dependency = $this->parseDependency($dependency);
+        if (empty($this->_diContainer[$class]['arguments'])) {
+            return $arguments;
+        }
 
-	    if (is_array($dependency)) {
-		$arguments[] = $dependency[0];
-		continue;
-	    }
+        foreach ($this->_diContainer[$class]['arguments'] as $dependency) {
+            $dependency = $this->parseDependency($dependency);
 
-	    if ($singleton) {
-		$arguments[] = $this->get($dependency);
-	    } else {
-		$arguments[] = clone $this->get($dependency, false);
-	    }
-	}
+            if (is_array($dependency)) {
+                $arguments[] = $dependency[0];
+                continue;
+            }
 
-	return $arguments;
+            if ($singleton) {
+                $arguments[] = $this->get($dependency);
+            } else {
+                $arguments[] = clone $this->get($dependency, false);
+            }
+        }
+
+        return $arguments;
     }
 
     /**
-     * @param string $dependency
+     * @param  string            $dependency
      * @return string
      * @throws \RuntimeException
      */
     private function parseDependency($dependency) {
-	$placeholder = $dependency[0];
+        $classMethod = explode('::', $dependency);
 
-	if (false == isset($this->_placeholders[$placeholder])) {
-	    if (false == isset($this->_diContainer[$dependency])) {
-		throw new \RuntimeException("Class alias {$dependency} not found");
-	    }
+        $class = $classMethod[0];
+        $method = empty($classMethod[1]) ? null : $classMethod[1];
 
-	    $class = $dependency;
-	} else if (0 === strpos($dependency, '#')) {
-	    $class = trim($dependency, '#');
-	    return array($class);
-	} else if (0 === strpos($dependency, '@')) {
-	    $dependency = trim($dependency, '@');
-	    $class = $dependency;
-	}
+        $placeholder = $dependency[0];
 
-	return $class;
+        if (false == isset($this->_placeholders[$placeholder])) {
+            if (false == isset($this->_diContainer[$class])) {
+                throw new \RuntimeException("Class alias {$class} not found");
+            }
+
+            $class = $classMethod[0];
+        } elseif (0 === strpos($dependency, '#')) {
+            $class = trim($dependency, '#');
+
+            return array($class);
+        } elseif (0 === strpos($dependency, '@')) {
+            $class = trim($classMethod[0], '@');
+        }
+
+        if (null !== $method) {
+            $class = $this->callMethod($class, $method);
+        }
+
+        return $class;
+    }
+
+    private function callMethod($class, $method) {
+        $object = $this->get($class);
+
+        return array(call_user_func(array($object, $method)));
     }
 
 }

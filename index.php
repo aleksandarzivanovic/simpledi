@@ -1,42 +1,12 @@
 <?php
 
-class TestClass {
+use System\Application\App;
 
-    public function __construct(AnotherTestClass $anotherTestClass) {
-	echo 'TestClass Constructor called.<br />';
-    }
+error_reporting(E_ALL | E_ERROR | E_NOTICE | E_WARNING);
+ini_set('display_errors', TRUE);
+spl_autoload_register(function($class) {
+	$file = str_replace('\\', '/', $class) . '.php';
+	require_once $file;
+});
 
-}
-
-class AnotherTestClass {
-
-    public function __construct() {
-	echo '<br />AnotherTestClass Constructor called.<br />';
-    }
-
-}
-
-class MainClass {
-
-    public $test;
-
-    public function __construct($test, TestClass $testClass, AnotherTestClass $anotherTestClass) {
-	
-    }
-
-}
-
-include 'System/Di/DiInterface.php';
-include 'System/Di/Di.php';
-
-$di = System\Di\Di::getInstance();
-$di2 = System\Di\Di::getInstance();
-
-$m = $di->get('class.main');
-$m1 = $di->get('class.main');
-
-$m1->test = 'Test';
-$m->test = 'Singleton Test';
-
-echo '<p>Singleton: <b>' . $m->test . '</b><br />';
-echo 'No Singleton: <b>' . $m1->test . '</b><br /></p>';
+App::init();

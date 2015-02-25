@@ -1,0 +1,3 @@
+{
+    "/users/profile/{id}/{action}": "Controllers/ResponseControllers/Users.php"
+}

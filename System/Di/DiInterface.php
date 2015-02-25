@@ -2,13 +2,14 @@
 
 namespace System\Di;
 
-interface DiInterface {
+interface DiInterface
+{
     /**
-     * @param string $class
+     * @param  string $class
      * @return object
      */
     public function get($class);
-    
+
     /**
      * @return Di
      */
