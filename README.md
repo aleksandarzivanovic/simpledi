@@ -1,2 +1,11 @@
 # ViBE
-Simple and easy to use dependency injection library for PHP >= 5.3
+Lightweight and easy to use (another) PHP Framework.
+
+Requirements:
+  - MySQL
+  - apache/nginx
+
+Later requirements:
+  - MongoDB
+  - Redis
+  - NodeJS
