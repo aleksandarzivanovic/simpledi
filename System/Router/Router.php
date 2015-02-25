@@ -8,168 +8,214 @@ use System\Http\Request\RequestInterface;
 
 class Router implements RouterInterface {
 
-	/** @var array */
-	protected $routes = array();
+    /** @var array */
+    protected $routes = array();
 
-	/** @var RequestInterface */
-	private $request;
+    /** @var RequestInterface */
+    private $request;
 
-	/**
-	 * @param RequestInterface $request
-	 */
-	public function __construct(RequestInterface $request) {
-		$this->request = $request;
-	}
+    /** @var callable */
+    private $callback;
 
-	/**
-	 * @param  string $route
-	 * @param  string $method
-	 * @param  callable $callback
-	 * @throws RuntimeException
-	 */
-	public function add($route, $method, callable $callback) {
-		list($regex, $parameters) = $this->parseRoute($route);
+    /** @var array */
+    private $parameters = [];
 
-		// validate method
-		Di::getInstance()->get('system.http.request.method', false, array($method));
+    /**
+     * @param RequestInterface $request
+     */
+    public function __construct(RequestInterface $request) {
+        $this->request = $request;
+    }
 
-		if (isset($this->routes[$method][$regex])) {
-			throw new \RuntimeException(sprintf('Route %s: %s already defined.', $method, $route));
-		}
+    /**
+     * @param string $route
+     * @param string $method
+     * @param callable $callback
+     * @return RouterInterface|$this
+     * @throws \RuntimeException
+     */
+    public function add($route, $method, callable $callback) {
+        $parameters = $this->routeParameters($route);
+        $regex = $this->routeToRegex($route);
 
-		$this->routes[$method][$regex] = array(
-			'response' => $callback,
-			'parameters' => $parameters,
-		);
-	}
-
-	/**
-	 * 
-	 * @return $this|null
-	 * @throws \RuntimeException
-	 */
-	public function loadController() {
-		$map = json_decode(file_get_contents('Config/data/router.json'), true);
-		$method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
-		$requestRoute = trim($this->request->getRequestData('route', $method), '/');
-
-		foreach ($map as $route => $file) {
-			list($regex) = $this->parseRoute($route);
-
-			if ($this->matchRoute($regex, $requestRoute)) {
-				require_once $file;
-				return $this;
-			}
-		}
-
-		throw new \RuntimeException("Route {$requestRoute} not found.");
-	}
-
-	/**
-	 *
-	 * @return \System\Http\Response\ResponseInterface
-	 * @throws \RuntimeException
-	 */
-	public function run() {
-		$requestMethod = $this->request->getMethod()->getMethod();
-		$method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
-		$route = trim($this->request->getRequestData('route', $method), '/');
-		$matches = array();
-		$callback = null;
-
-		foreach ($this->routes[$requestMethod] as $regex => $value) {
-			preg_match_all('/' . $regex . '$/', $route, $matches);
+        // validate method
+        Di::getInstance()->get('system.http.request.method', false, array($method));
 
 
-			if ($this->matchRoute($regex, $route, $matches)) {
-				$callback = $value['response'];
-				unset($matches[0]);
-				break;
-			}
-		}
 
-		if (false == is_callable($callback)) {
-			throw new \RuntimeException("Route {$route} not found.");
-		}
+        if (isset($this->routes[$method][$regex])) {
+            throw new \RuntimeException(sprintf('Route %s: %s already defined.', $method, $route));
+        }
 
-		$mapped = $this->mapParameters($matches);
+        $this->routes[$method][$regex] = array(
+            'response' => $callback,
+            'parameters' => $parameters,
+        );
 
-		return $this->callCallback($callback, $mapped);
-	}
+        return $this;
+    }
 
-	/**
-	 *
-	 * @param  callable $callback
-	 * @param  array $parameters
-	 * @return \System\Http\Response\ResponseInterface
-	 * @throws \RuntimeException\
-	 */
-	private function callCallback(callable $callback, array $parameters = array()) {
-		$reflectiton = new \ReflectionFunction($callback);
-		$response = Di::getInstance()->get('system.http.response');
-		array_unshift($parameters, $response);
+    /**
+     *
+     * @return $this|null
+     * @throws \RuntimeException
+     */
+    public function loadController() {
+        $map = json_decode(file_get_contents('Config/data/router.json'), true);
 
-		$return = $reflectiton->invokeArgs($parameters);
+        $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
+        $requestRoute = trim($this->request->getRequestData('route', $method), '/');
 
-		if (false == $return instanceof \System\Http\Response\ResponseInterface) {
-			throw new \RuntimeException("Controller return value must be instance of response");
-		}
+        $requestMethod = Di::getInstance()->get('system.http.request.method')->getMethod();
+        $parameters = array();
 
-		return $return;
-	}
+        foreach ($map as $route => $file) {
+            $regex = $this->routeToRegex($route);
 
-	/**
-	 *
-	 * @param  array $parameters
-	 * @return array
-	 */
-	private function mapParameters(array $parameters) {
-		$map = array();
+            if ($this->getRequestParamters($regex, $requestRoute, $parameters)) {
 
-		foreach ($parameters as $parameter) {
-			$map[] = $parameter[0];
-		}
+                if (false == is_file($file)) {
+                    throw new \RuntimeException("Response Controller for route {$route} not found");
+                }
 
-		return $map;
-	}
+                require_once $file;
 
-	/**
-	 *
-	 * @param  string $route
-	 * @return array
-	 */
-	private function parseRoute($route) {
-		$routeData = explode('/', trim($route, '/'));
-		$regex = array();
-		$parameters = array();
+                $this->validateRouteExistent($regex, $route);
 
-		foreach ($routeData as $data) {
-			if (0 === strpos($data, '{')) {
-				$trim = str_replace(array('{', '}'), '', $data);
-				$parameters[] = $trim;
-				$regex[] = '([a-zA-Z0-9_-]+)';
-			} else {
-				$regex[] = $data;
-			}
-		}
+                $this->callback = $this->routes[$requestMethod][$regex]['response'];
+                $this->parameters = $this->mapParameters($parameters);
 
-		return array(
-			implode('\/', $regex),
-			$parameters,
-		);
-	}
 
-	/**
-	 * 
-	 * @param string $regex
-	 * @param string $route
-	 * @param array $matches
-	 * @return bool
-	 */
-	private function matchRoute($regex, $route, array &$matches = array()) {
-		preg_match_all('/' . $regex . '$/', $route, $matches);
+                return $this;
+            }
+        }
 
-		return false == empty($matches[0]);
-	}
+        throw new \RuntimeException("Route {$requestRoute} not found.");
+    }
+
+    /**
+     * @param $regex
+     * @param $route
+     */
+    private function validateRouteExistent($regex, $route)
+    {
+        $method = Di::getInstance()->get('system.http.request.method')->getMethod();
+
+        if (empty($this->routes[$method][$regex])) {
+            throw new \RuntimeException("Route {$route} found in config but is not registered");
+        }
+    }
+
+    /**
+     *
+     * @return \System\Http\Response\ResponseInterface
+     * @throws \RuntimeException
+     */
+    public function run() {
+        $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
+        $route = trim($this->request->getRequestData('route', $method), '/');
+
+        if (false == is_callable($this->callback)) {
+            throw new \RuntimeException("Controller for route {$route} is not callable.");
+        }
+
+        return $this->callCallback($this->callback, $this->parameters);
+    }
+
+    /**
+     *
+     * @param  callable $callback
+     * @param  array $parameters
+     * @return \System\Http\Response\ResponseInterface
+     * @throws \RuntimeException
+     */
+    private function callCallback(callable $callback, array $parameters = array()) {
+        $reflection = new \ReflectionFunction($callback);
+        $response = Di::getInstance()->get('system.http.response');
+        array_unshift($parameters, $response);
+
+        $return = $reflection->invokeArgs($parameters);
+
+        if (false == $return instanceof \System\Http\Response\ResponseInterface) {
+            throw new \RuntimeException("Controller return value must be instance of response");
+        }
+
+        return $return;
+    }
+
+    /**
+     *
+     * @param  array $parameters
+     * @return array
+     */
+    private function mapParameters(array $parameters) {
+        $map = array();
+
+        foreach ($parameters as $parameter) {
+            $map[] = $parameter[0];
+        }
+
+        return $map;
+    }
+
+    private function routeParameters($route)
+    {
+        $parameters = [];
+
+        foreach ($this->routeToArray($route) as $data) {
+            if (0 === strpos($data, '{')) {
+                $parameters[] = str_replace(array('{', '}'), '', $data);
+            }
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * @param $route
+     * @return string
+     */
+    private function routeToRegex($route)
+    {
+        $regex = [];
+
+        foreach ($this->routeToArray($route) as $data) {
+            if (0 === strpos($data, '{')) {
+                $regex[] = '([a-zA-Z0-9_-]+)';
+            } else {
+                $regex[] = $data;
+            }
+        }
+
+        return implode('\/', $regex);
+    }
+
+    /**
+     * @param $route
+     * @return array
+     */
+    private function routeToArray($route)
+    {
+        return explode('/', trim($route, '/'));
+    }
+
+    /**
+     *
+     * @param string $regex
+     * @param string $route
+     * @param array $matches
+     * @return bool
+     */
+    private function getRequestParamters($regex, $route, array &$matches = array()) {
+        preg_match_all('/' . $regex . '$/', $route, $matches);
+
+        if(false == empty($matches[0])) {
+            unset($matches[0]);
+
+            return true;
+        }
+
+        return false;
+    }
 
 }
