@@ -12,7 +12,7 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 	return $response;
 });
 
-App::post('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
+App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
 	echo 'This is POST method for url /users/profile/{id}/view<br/>';
 	echo 'Id is ' . $id . '<br />';
 	echo '<a href="index.php?route=/users/profile/' . $id . '/view">View GET route</a>';

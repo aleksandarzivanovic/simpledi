@@ -66,44 +66,20 @@ class Router implements RouterInterface {
         $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
         $requestRoute = trim($this->request->getRequestData('route', $method), '/');
 
-        $requestMethod = Di::getInstance()->get('system.http.request.method')->getMethod();
-        $parameters = array();
-
         foreach ($map as $route => $file) {
             $regex = $this->routeToRegex($route);
 
-            if ($this->getRequestParamters($regex, $requestRoute, $parameters)) {
+            if ($this->getRequestParameters($regex, $requestRoute)) {
 
                 if (false == is_file($file)) {
                     throw new \RuntimeException("Response Controller for route {$route} not found");
                 }
 
                 require_once $file;
-
-                $this->validateRouteExistent($regex, $route);
-
-                $this->callback = $this->routes[$requestMethod][$regex]['response'];
-                $this->parameters = $this->mapParameters($parameters);
-
-
-                return $this;
             }
         }
 
-        throw new \RuntimeException("Route {$requestRoute} not found.");
-    }
-
-    /**
-     * @param $regex
-     * @param $route
-     */
-    private function validateRouteExistent($regex, $route)
-    {
-        $method = Di::getInstance()->get('system.http.request.method')->getMethod();
-
-        if (empty($this->routes[$method][$regex])) {
-            throw new \RuntimeException("Route {$route} found in config but is not registered");
-        }
+        return $this;
     }
 
     /**
@@ -114,12 +90,59 @@ class Router implements RouterInterface {
     public function run() {
         $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
         $route = trim($this->request->getRequestData('route', $method), '/');
+        $this->parseRequest($route);
 
         if (false == is_callable($this->callback)) {
             throw new \RuntimeException("Controller for route {$route} is not callable.");
         }
 
         return $this->callCallback($this->callback, $this->parameters);
+    }
+
+    /**
+     * @return array
+     */
+    public function getRoutes() {
+        return $this->routes;
+    }
+
+    public function clearRoutes() {
+        $this->routes = [];
+
+        return $this;
+    }
+
+    /**
+     * @param $route
+     */
+    private function parseRequest($route)
+    {
+        $method = Di::getInstance()->get('system.http.request.method')->getMethod();
+        $parameters = array();
+        $tmpParameters = array();
+        $callback = null;
+        $lastCount = 999;
+
+        /**
+         * The one with least parameters should be called.
+         * Why? Imagine you have route /user/{id}/{action} and /user/{id}/delete
+         * Without this route /user/{id}/delete will be counted as /user/{id}/{action} if it is registered first
+         */
+        foreach ($this->routes[$method] as $regex => $value) {
+            if ($this->getRequestParameters($regex, $route, $tmpParameters)) {
+                $currentCount = count($tmpParameters);
+
+                if ($currentCount < $lastCount) {
+                    $lastCount = $currentCount;
+                    $callback = $value['response'];
+                    $parameters = $tmpParameters;
+                    unset($parameters[0]);
+                }
+            }
+        }
+
+        $this->callback = $callback;
+        $this->parameters = $this->mapParameters($parameters);
     }
 
     /**
@@ -158,6 +181,10 @@ class Router implements RouterInterface {
         return $map;
     }
 
+    /**
+     * @param $route
+     * @return array
+     */
     private function routeParameters($route)
     {
         $parameters = [];
@@ -206,7 +233,7 @@ class Router implements RouterInterface {
      * @param array $matches
      * @return bool
      */
-    private function getRequestParamters($regex, $route, array &$matches = array()) {
+    private function getRequestParameters($regex, $route, array &$matches = array()) {
         preg_match_all('/' . $regex . '$/', $route, $matches);
 
         if(false == empty($matches[0])) {

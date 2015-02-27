@@ -9,4 +9,44 @@ spl_autoload_register(function($class) {
 	require_once $file;
 });
 
-App::init();
+function loadFiles($path)
+{
+    $path = rtrim($path, '/');
+    $contents = scandir($path);
+
+    $di = \System\Di\Di::getInstance();
+    $router = $di->get('system.router');
+
+    foreach ($contents as $content) {
+        if ($content == '.' || $content == '..') {
+            continue;
+        }
+
+        $router->clearRoutes();
+        $fullPath = $path . '/' . $content;
+        $fileName = explode('.', $content);
+        array_shift($fileName);
+
+        if ('php' === $fileName[0]) {
+            include $fullPath;
+        } else if (is_dir($fullPath)) {
+            loadFiles($fullPath);
+            return;
+        }
+
+        foreach ($router->getRoutes()['GET']as $r) {
+            var_dump('SADASDASDAD', $r);
+        }
+    }
+}
+
+$di = \System\Di\Di::getInstance();
+
+if (isset ($_GET['build_router'])) {
+    loadFiles('Controllers/ResponseControllers/');
+    /** @var \System\Router\RouterInterface $router */
+    $router = $di->get('system.router');
+    var_dump($router->getRoutes());
+}
+
+//App::init();

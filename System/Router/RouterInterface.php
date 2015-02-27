@@ -26,4 +26,9 @@ interface RouterInterface {
 	 * @throws \RuntimeException
 	 */
 	public function loadController();
+
+    /**
+     * @return array
+     */
+    public function getRoutes();
 }
