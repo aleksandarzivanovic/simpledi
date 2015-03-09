@@ -8,7 +8,8 @@
         "arguments": ["system.http.request.method", "system.http.header"]
     },
     "system.http.response": {
-        "class": "System\\Http\\Response\\Response"
+        "class": "System\\Http\\Response\\Response",
+        "arguments": ["system.http.header"]
     },
     "system.http.request.request_factory": {
         "class": "System\\Http\\Request\\RequestFactory"
@@ -20,7 +21,10 @@
         "class": "System\\Router\\Router",
         "arguments": ["system.http.request"]
     },
-    "system.parameters": {
-        "class": "System\\Parameters\\Parameters"
+    "system.parameter": {
+        "class": "System\\Parameter\\Parameter"
+    },
+    "system.session": {
+        "class": "System\\Session\\Session"
     }
 }

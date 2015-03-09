@@ -24,14 +24,14 @@ interface RequestInterface
 
     /**
      * @param string $data
-     * @param string $method
+     * @param MethodInterface $method
      * @return string|array|object|null
      */
     public function getRequestData($data, MethodInterface $method);
 
     /**
      *
-     * @param string $method
+     * @param MethodInterface $method
      * @return array
      */
     public function getRequestDataArray(MethodInterface $method);

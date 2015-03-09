@@ -1,8 +1,8 @@
 <?php
 
-namespace System\Parameters;
+namespace System\Parameter;
 
-class Parameters implements ParametersInterface
+class Parameter implements ParameterInterface
 {
     /** @var int */
     private $parameterType = self::PARAMETER_TYPE_NONE;

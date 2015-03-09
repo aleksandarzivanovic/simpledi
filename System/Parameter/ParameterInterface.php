@@ -1,8 +1,8 @@
 <?php
 
-namespace System\Parameters;
+namespace System\Parameter;
 
-interface ParametersInterface
+interface ParameterInterface
 {
     const PARAMETER_TYPE_NONE    =   0;
     const PARAMETER_TYPE_STRING  =   1;

@@ -47,4 +47,17 @@ class Header implements HeaderInterface
 
         return $this;
     }
+
+    public function updateHeaders()
+    {
+        foreach ($this->headers as $header => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value);
+            } elseif (is_object($value)) {
+                $value = serialize($value);
+            }
+
+            header("{$header}: {$value}");
+        }
+    }
 }
