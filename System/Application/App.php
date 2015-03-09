@@ -8,6 +8,7 @@ use System\Router\RouterInterface;
 
 class App {
 
+	/** @var bool */
 	private static $initialized;
 
 	public static function init() {
@@ -20,7 +21,7 @@ class App {
 	/**
 	 * 
 	 * @param string $route
-	 * @param \System\Application\callable $callback
+	 * @param callable $callback
 	 */
 	public static function get($route, callable $callback) {
 		Di::getInstance()->get('system.router')->add($route, MethodInterface::METHOD_GET, $callback);
@@ -29,7 +30,7 @@ class App {
 	/**
 	 * 
 	 * @param string $route
-	 * @param \System\Application\callable $callback
+	 * @param callable $callback
 	 */
 	public static function post($route, callable $callback) {
 		Di::getInstance()->get('system.router')->add($route, MethodInterface::METHOD_POST, $callback);
@@ -38,7 +39,7 @@ class App {
 	/**
 	 * 
 	 * @param string $route
-	 * @param \System\Application\callable $callback
+	 * @param callable $callback
 	 */
 	public static function put($route, callable $callback) {
 		Di::getInstance()->get('system.router')->add($route, MethodInterface::METHOD_PUT, $callback);
@@ -47,7 +48,7 @@ class App {
 	/**
 	 * 
 	 * @param string $route
-	 * @param \System\Application\callable $callback
+	 * @param callable $callback
 	 */
 	public static function delete($route, callable $callback) {
 		/* @var $router RouterInterface */

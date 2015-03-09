@@ -19,5 +19,8 @@
     "system.router": {
         "class": "System\\Router\\Router",
         "arguments": ["system.http.request"]
+    },
+    "system.parameters": {
+        "class": "System\\Parameters\\Parameters"
     }
 }

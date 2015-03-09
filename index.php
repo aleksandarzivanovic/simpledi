@@ -49,4 +49,4 @@ if (isset ($_GET['build_router'])) {
     var_dump($router->getRoutes());
 }
 
-//App::init();
+App::init();
