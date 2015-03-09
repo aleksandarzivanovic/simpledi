@@ -6,8 +6,8 @@ use System\Di\Di;
 use System\Http\Request\Method\MethodInterface;
 use System\Http\Request\RequestInterface;
 
-class Router implements RouterInterface {
-
+class Router implements RouterInterface
+{
     /** @var array */
     protected $routes = array();
 
@@ -23,7 +23,8 @@ class Router implements RouterInterface {
     /**
      * @param RequestInterface $request
      */
-    public function __construct(RequestInterface $request) {
+    public function __construct(RequestInterface $request)
+    {
         $this->request = $request;
     }
 
@@ -34,14 +35,13 @@ class Router implements RouterInterface {
      * @return RouterInterface|$this
      * @throws \RuntimeException
      */
-    public function add($route, $method, callable $callback) {
+    public function add($route, $method, callable $callback)
+    {
         $parameters = $this->routeParameters($route);
         $regex = $this->routeToRegex($route);
 
         // validate method
         Di::getInstance()->get('system.http.request.method', false, array($method));
-
-
 
         if (isset($this->routes[$method][$regex])) {
             throw new \RuntimeException(sprintf('Route %s: %s already defined.', $method, $route));
@@ -60,7 +60,8 @@ class Router implements RouterInterface {
      * @return $this|null
      * @throws \RuntimeException
      */
-    public function loadController() {
+    public function loadController()
+    {
         $map = json_decode(file_get_contents('Config/data/router.json'), true);
 
         $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
@@ -70,7 +71,6 @@ class Router implements RouterInterface {
             $regex = $this->routeToRegex($route);
 
             if ($this->getRequestParameters($regex, $requestRoute)) {
-
                 if (false == is_file($file)) {
                     throw new \RuntimeException("Response Controller for route {$route} not found");
                 }
@@ -87,7 +87,8 @@ class Router implements RouterInterface {
      * @return \System\Http\Response\ResponseInterface
      * @throws \RuntimeException
      */
-    public function run() {
+    public function run()
+    {
         $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
         $route = trim($this->request->getRequestData('route', $method), '/');
         $this->parseRequest($route);
@@ -102,11 +103,13 @@ class Router implements RouterInterface {
     /**
      * @return array
      */
-    public function getRoutes() {
+    public function getRoutes()
+    {
         return $this->routes;
     }
 
-    public function clearRoutes() {
+    public function clearRoutes()
+    {
         $this->routes = [];
 
         return $this;
@@ -152,7 +155,8 @@ class Router implements RouterInterface {
      * @return \System\Http\Response\ResponseInterface
      * @throws \RuntimeException
      */
-    private function callCallback(callable $callback, array $parameters = array()) {
+    private function callCallback(callable $callback, array $parameters = array())
+    {
         $reflection = new \ReflectionFunction($callback);
         $response = Di::getInstance()->get('system.http.response');
         array_unshift($parameters, $response);
@@ -171,7 +175,8 @@ class Router implements RouterInterface {
      * @param  array $parameters
      * @return array
      */
-    private function mapParameters(array $parameters) {
+    private function mapParameters(array $parameters)
+    {
         $map = array();
 
         foreach ($parameters as $parameter) {
@@ -233,10 +238,11 @@ class Router implements RouterInterface {
      * @param array $matches
      * @return bool
      */
-    private function getRequestParameters($regex, $route, array &$matches = array()) {
-        preg_match_all('/' . $regex . '$/', $route, $matches);
+    private function getRequestParameters($regex, $route, array &$matches = array())
+    {
+        preg_match_all('/'.$regex.'$/', $route, $matches);
 
-        if(false == empty($matches[0])) {
+        if (false == empty($matches[0])) {
             unset($matches[0]);
 
             return true;
@@ -244,5 +250,4 @@ class Router implements RouterInterface {
 
         return false;
     }
-
 }

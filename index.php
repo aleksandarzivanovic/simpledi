@@ -3,10 +3,15 @@
 use System\Application\App;
 
 error_reporting(E_ALL | E_ERROR | E_NOTICE | E_WARNING);
-ini_set('display_errors', TRUE);
-spl_autoload_register(function($class) {
-	$file = str_replace('\\', '/', $class) . '.php';
-	require_once $file;
+ini_set('display_errors', true);
+spl_autoload_register(function ($class) {
+    $file = str_replace('\\', '/', $class).'.php';
+
+    if (is_file($file)) {
+        require_once $file;
+    } else {
+        throw new \RuntimeException("File not found {$file}");
+    }
 });
 
 function loadFiles($path)
@@ -23,14 +28,15 @@ function loadFiles($path)
         }
 
         $router->clearRoutes();
-        $fullPath = $path . '/' . $content;
+        $fullPath = $path.'/'.$content;
         $fileName = explode('.', $content);
         array_shift($fileName);
 
         if ('php' === $fileName[0]) {
             include $fullPath;
-        } else if (is_dir($fullPath)) {
+        } elseif (is_dir($fullPath)) {
             loadFiles($fullPath);
+
             return;
         }
 
@@ -42,11 +48,11 @@ function loadFiles($path)
 
 $di = \System\Di\Di::getInstance();
 
-if (isset ($_GET['build_router'])) {
+if (isset($_GET['build_router'])) {
     loadFiles('Controllers/ResponseControllers/');
     /** @var \System\Router\RouterInterface $router */
     $router = $di->get('system.router');
     var_dump($router->getRoutes());
 }
 
-//App::init();
+App::init();
