@@ -12,6 +12,7 @@ namespace System\Http\Response;
  *
  * @author coa
  */
-interface ResponseInterface {
-	//put your code here
+interface ResponseInterface
+{
+    //put your code here
 }
