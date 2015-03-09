@@ -21,4 +21,9 @@ interface HeaderInterface
      * @return array
      */
     public function getHeaders();
+
+    /**
+     * @return HeaderInterface
+     */
+    public function updateHeaders();
 }

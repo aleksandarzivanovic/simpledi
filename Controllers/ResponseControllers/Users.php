@@ -2,20 +2,23 @@
 
 use System\Application\App;
 use System\Http\Response\ResponseInterface;
+use System\Session\SessionInterface;
 
 App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, $id, $action) {
-    echo 'This is GET method for url /users/profile/{id}/{action}<br/>';
-    echo 'Id is '.$id.'<br />';
-    echo 'Action is '.$action.'<br />';
-    echo '<form method="post"><button type="submit">View POST route</button></form>';
+    /** @var SessionInterface $s */
+    $s = \System\Di\Di::getInstance()->get('system.session');
+    $s->addOneTime(['coa' => 'test', 'test' => 'asd']);
+    $s->add(['coa' => 'zivanovic', 'marjan' => 'hrzic']);
 
     return $response;
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
-    echo 'This is GET method for url /users/profile/{id}/view<br/>';
-    echo 'Id is '.$id.'<br />';
-    echo '<a href="index.php?route=/users/profile/'.$id.'/view">View GET route</a>';
+    /** @var SessionInterface $s */
+    $s = \System\Di\Di::getInstance()->get('system.session');
+
+    var_dump($s->getOneTime(['coa', 'test']));
+    var_dump($s->get(['coa', 'marjan']));
 
     return $response;
 });

@@ -2,18 +2,52 @@
 
 namespace System\Http\Response;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+use System\Http\Header\HeaderInterface;
 
-/**
- * Description of Response
- *
- * @author coa
- */
 class Response implements ResponseInterface
 {
-    //put your code here
+    /** @var HeaderInterface */
+    private $header;
+
+    /**
+     * @param HeaderInterface $header
+     */
+    public function __construct(HeaderInterface $header)
+    {
+        $this->header = $header;
+    }
+
+    /**
+     * @param string $header
+     * @param string $value
+     * @return HeaderInterface|$this
+     */
+    public function setHeader($header, $value)
+    {
+        $this->header->setHeader($header, $value);
+    }
+
+    /**
+     * @param string $header
+     * @return string|array|null
+     */
+    public function getHeader($header)
+    {
+        return $this->header->getHeader($header);
+    }
+
+    /**
+     * @return array
+     */
+    public function getHeaders()
+    {
+        return $this->header->getHeaders();
+    }
+
+    public function updateHeaders()
+    {
+        $this->header->updateHeaders();
+
+        return $this;
+    }
 }

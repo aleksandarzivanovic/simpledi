@@ -5,6 +5,7 @@ namespace System\Router;
 use System\Di\Di;
 use System\Http\Request\Method\MethodInterface;
 use System\Http\Request\RequestInterface;
+use System\Http\Response\ResponseInterface;
 
 class Router implements RouterInterface
 {
@@ -152,20 +153,25 @@ class Router implements RouterInterface
      *
      * @param  callable $callback
      * @param  array $parameters
-     * @return \System\Http\Response\ResponseInterface
+     * @return ResponseInterface
      * @throws \RuntimeException
      */
     private function callCallback(callable $callback, array $parameters = array())
     {
         $reflection = new \ReflectionFunction($callback);
+        $session = Di::getInstance()->get('system.session');
         $response = Di::getInstance()->get('system.http.response');
         array_unshift($parameters, $response);
 
+        /** @var ResponseInterface $return */
         $return = $reflection->invokeArgs($parameters);
 
-        if (false == $return instanceof \System\Http\Response\ResponseInterface) {
+        if (false == $return instanceof ResponseInterface) {
             throw new \RuntimeException("Controller return value must be instance of response");
         }
+
+        $return->updateHeaders();
+        $session->persistSession();
 
         return $return;
     }

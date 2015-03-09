@@ -2,7 +2,7 @@
 
 namespace System\Di;
 
-use System\Parameters\ParametersInterface;
+use System\Parameter\ParameterInterface;
 
 class Di implements DiInterface
 {
@@ -203,15 +203,15 @@ class Di implements DiInterface
      */
     private function parseDependency($dependency)
     {
-        /** @var ParametersInterface $parameters */
-        $parameters = self::get('system.parameters');
+        /** @var ParameterInterface $parameters */
+        $parameters = self::get('system.parameter');
         $parameters->parseParameter($dependency);
 
         switch ($parameters->getParameterType()) {
-            case ParametersInterface::PARAMETER_TYPE_METHOD:
+            case ParameterInterface::PARAMETER_TYPE_METHOD:
                 $cleanDependency = $this->callMethod($parameters->getParameter(), $parameters->getParameterMethod());
                 break;
-            case ParametersInterface::PARAMETER_TYPE_CLASS:
+            case ParameterInterface::PARAMETER_TYPE_CLASS:
                 $cleanDependency = $parameters->getParameter();
                 $classAlias = $this->getClassAlias($cleanDependency);
 
@@ -220,10 +220,10 @@ class Di implements DiInterface
                 }
 
                 break;
-            case ParametersInterface::PARAMETER_TYPE_STRING:
+            case ParameterInterface::PARAMETER_TYPE_STRING:
                 $cleanDependency = array($parameters->getParameter());
                 break;
-            case ParametersInterface::PARAMETER_TYPE_ALIAS:
+            case ParameterInterface::PARAMETER_TYPE_ALIAS:
                 $alias = $parameters->getParameter();
 
                 if (false == isset($this->_diContainer[$alias])) {
