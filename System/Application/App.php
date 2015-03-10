@@ -21,7 +21,7 @@ class App
 
             list($file, $data) = $response->getTemplate();
 
-            if (isset($file) && is_file($file)) {
+            if (isset($file) && is_file("Web/views/{$file}")) {
                 /** @var TemplateInterface $template */
                 $template = Di::getInstance()->get('system.template');
                 $template->load($file);

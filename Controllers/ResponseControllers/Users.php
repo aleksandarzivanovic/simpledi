@@ -14,11 +14,7 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
-    return $response->render('test.html', [
-        'array' => [
-            'key' => [
-                'value' => 'This is response value',
-            ],
-        ],
+    return $response->render('users/profile/profile.html', [
+        'id' => $id
     ]);
 });

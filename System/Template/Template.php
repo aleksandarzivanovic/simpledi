@@ -29,6 +29,8 @@ class Template implements TemplateInterface
      */
     public function load($file)
     {
+        $file = "Web/views/{$file}";
+
         if (false == is_file($file)) {
             throw new \RuntimeException("Template {$file} is not file");
         }
