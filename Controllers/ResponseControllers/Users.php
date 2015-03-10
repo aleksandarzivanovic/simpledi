@@ -14,11 +14,11 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
-    /** @var SessionInterface $s */
-    $s = \System\Di\Di::getInstance()->get('system.session');
-
-    var_dump($s->getOneTime(['coa', 'test']));
-    var_dump($s->get(['coa', 'marjan']));
-
-    return $response;
+    return $response->render('test.html', [
+        'array' => [
+            'key' => [
+                'value' => 'This is response value',
+            ],
+        ],
+    ]);
 });

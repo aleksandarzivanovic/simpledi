@@ -6,6 +6,7 @@ use System\Di\Di;
 use System\Http\Request\Method\MethodInterface;
 use System\Http\Request\RequestInterface;
 use System\Http\Response\ResponseInterface;
+use System\Template\TemplateInterface;
 
 class Router implements RouterInterface
 {
@@ -21,12 +22,17 @@ class Router implements RouterInterface
     /** @var array */
     private $parameters = [];
 
+    /** @var TemplateInterface */
+    private $template;
+
     /**
      * @param RequestInterface $request
+     * @param TemplateInterface $template
      */
-    public function __construct(RequestInterface $request)
+    public function __construct(RequestInterface $request, TemplateInterface $template)
     {
         $this->request = $request;
+        $this->template = $template;
     }
 
     /**

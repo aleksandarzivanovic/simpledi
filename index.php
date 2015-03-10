@@ -16,13 +16,4 @@ spl_autoload_register(function ($class) {
     }
 });
 
-/* @var $template \System\Template\Template */
-$template = \System\Di\Di::getInstance()->get('system.template');
-$template->load('./test.html');
-
-$template->render([
-    'test' => ['coa' => 'JO JO JO'],
-    'sta' => ['sad_da_radim' => 'NE ZNAM!'],
-]);
-
 App::init();
