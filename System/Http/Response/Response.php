@@ -3,11 +3,18 @@
 namespace System\Http\Response;
 
 use System\Http\Header\HeaderInterface;
+use System\Template\TemplateInterface;
 
 class Response implements ResponseInterface
 {
     /** @var HeaderInterface */
     private $header;
+
+    /** @var string */
+    private $templateFile;
+
+    /** @var array */
+    private $templateData = [];
 
     /**
      * @param HeaderInterface $header
@@ -15,6 +22,27 @@ class Response implements ResponseInterface
     public function __construct(HeaderInterface $header)
     {
         $this->header = $header;
+    }
+
+    /**
+     * @param $template
+     * @param array $data
+     * @return ResponseInterface|$this
+     */
+    public function render($template, array $data)
+    {
+        $this->templateFile = $template;
+        $this->templateData = $data;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getTemplate()
+    {
+        return [$this->templateFile, $this->templateData];
     }
 
     /**

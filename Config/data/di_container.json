@@ -19,7 +19,7 @@
     },
     "system.router": {
         "class": "System\\Router\\Router",
-        "arguments": ["system.http.request"]
+        "arguments": ["system.http.request", "system.template"]
     },
     "system.parameter": {
         "class": "System\\Parameter\\Parameter"

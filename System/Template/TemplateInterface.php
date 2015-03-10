@@ -5,6 +5,16 @@ namespace System\Template;
 interface TemplateInterface
 {
     /**
+     * @param array $values
+     */
+    public function render(array $values = []);
+
+    /**
+     * @param string $file
+     */
+    public function load($file);
+
+    /**
      * @param array $areas
      */
     public function setAreas(array $areas);

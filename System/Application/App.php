@@ -5,6 +5,8 @@ namespace System\Application;
 use System\Di\Di;
 use System\Http\Request\Method\MethodInterface;
 use System\Router\RouterInterface;
+use System\Http\Response\ResponseInterface;
+use System\Template\TemplateInterface;
 
 class App
 {
@@ -14,7 +16,18 @@ class App
     public static function init()
     {
         if (false == static::$initialized) {
-            Di::getInstance()->get('system.router')->loadController()->run();
+            /** @var ResponseInterface $response */
+            $response = Di::getInstance()->get('system.router')->loadController()->run();
+
+            list($file, $data) = $response->getTemplate();
+
+            if (isset($file) && is_file($file)) {
+                /** @var TemplateInterface $template */
+                $template = Di::getInstance()->get('system.template');
+                $template->load($file);
+                $template->render($data);
+            }
+
             static::$initialized = true;
         }
     }

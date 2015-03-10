@@ -10,4 +10,15 @@ use System\Http\Header\HeaderInterface;
  */
 interface ResponseInterface extends HeaderInterface
 {
+    /**
+     * @param $template
+     * @param array $data
+     * @return ResponseInterface
+     */
+    public function render($template, array $data);
+
+    /**
+     * @return array
+     */
+    public function getTemplate();
 }
