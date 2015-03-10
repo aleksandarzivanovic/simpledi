@@ -3,7 +3,6 @@
 namespace System\Http\Response;
 
 use System\Http\Header\HeaderInterface;
-use System\Template\TemplateInterface;
 
 class Response implements ResponseInterface
 {

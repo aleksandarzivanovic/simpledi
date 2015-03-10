@@ -178,7 +178,7 @@ class Router implements RouterInterface
 
         $return->updateHeaders();
         $session->persistSession();
-        
+
         return $return;
     }
 
