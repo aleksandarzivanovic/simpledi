@@ -73,8 +73,10 @@ class Template implements TemplateInterface {
                 $this->variables['v'][$area][$index] = $this->getArrayValue($this->values, $variable);
             }
             
-            $this->source = str_replace($this->variables['p'][$area], $this->variables['v'][$area], $this->source);
+            $this->areas[$area] = str_replace($this->variables['p'][$area], $this->variables['v'][$area], $this->source);
         }
+        
+        var_dump($this->areas);
     }
     
     private function replaceAreas()
@@ -84,7 +86,7 @@ class Template implements TemplateInterface {
         }
     }
     
-    public function getArrayValue(&$array, $key, $value = null) {
+    public function getArrayValue(&$array, $key) {
         $index = explode('.', $key, 2);
         
         if (false == isset($array[$index[0]])){
@@ -92,7 +94,7 @@ class Template implements TemplateInterface {
         }
 
         if(false == empty($index[1])) {
-            return $this->getArrayValue($array[$index[0]], $index[1], $value);   
+            return $this->getArrayValue($array[$index[0]], $index[1]);   
         }
         
         return $array[$index[0]];
