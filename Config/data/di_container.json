@@ -26,5 +26,8 @@
     },
     "system.session": {
         "class": "System\\Session\\Session"
+    },
+    "system.template": {
+        "class": "System\\Template\\Template"
     }
 }
