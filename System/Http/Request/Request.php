@@ -26,6 +26,7 @@ class Request extends RequestFactory implements RequestInterface
 
     /**
      * @param string $header
+     *
      * @return string
      */
     public function getHeader($header)
@@ -50,9 +51,9 @@ class Request extends RequestFactory implements RequestInterface
     }
 
     /**
-     *
      * @param string $data
      * @param MethodInterface $method
+     *
      * @return string|null
      */
     public function getRequestData($data, MethodInterface $method = null)
@@ -63,9 +64,10 @@ class Request extends RequestFactory implements RequestInterface
     }
 
     /**
-     *
      * @param MethodInterface $method
+     *
      * @return array
+     *
      * @throws \RuntimeException
      */
     public function getRequestDataArray(MethodInterface $method = null)

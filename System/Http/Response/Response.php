@@ -26,6 +26,7 @@ class Response implements ResponseInterface
     /**
      * @param $template
      * @param array $data
+     *
      * @return ResponseInterface|$this
      */
     public function render($template, array $data)
@@ -47,6 +48,7 @@ class Response implements ResponseInterface
     /**
      * @param string $header
      * @param string $value
+     *
      * @return HeaderInterface|$this
      */
     public function setHeader($header, $value)
@@ -56,6 +58,7 @@ class Response implements ResponseInterface
 
     /**
      * @param string $header
+     *
      * @return string|array|null
      */
     public function getHeader($header)

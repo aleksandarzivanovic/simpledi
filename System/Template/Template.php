@@ -19,7 +19,7 @@ class Template implements TemplateInterface
     private $areas = [];
 
     /** @var array */
-    private $variables = ['p' => [], 'v' => []];
+    private $variables = ['p' => [], 'v' => [], 'm' => []];
 
     /** @var array */
     private $values = [];
@@ -36,9 +36,9 @@ class Template implements TemplateInterface
         $this->file = $file;
         $this->source = file_get_contents($this->file);
 
-        $this->getParent();
         $this->parseAreas();
         $this->parseVariables();
+        $this->getParent();
     }
 
     /**
@@ -54,10 +54,11 @@ class Template implements TemplateInterface
         }
 
         $this->setRenderVariables($values);
+        $this->parseForMethodsVariables();
         $this->replaceRenderVariables();
         $this->replaceAreas();
-
         $this->preRender();
+
         echo $this->source;
     }
 
@@ -66,7 +67,9 @@ class Template implements TemplateInterface
      */
     public function setAreas(array $areas)
     {
-        $this->areas = $areas;
+        foreach ($areas as $area => $content) {
+            $this->setArea($area, $content);
+        }
     }
 
     /**
@@ -74,7 +77,7 @@ class Template implements TemplateInterface
      */
     public function setVariables(array $variables)
     {
-        $this->variables = $variables;
+        $this->variables = array_merge_recursive($this->variables, $variables);
     }
 
     /**
@@ -83,15 +86,12 @@ class Template implements TemplateInterface
      */
     public function setArea($area, $value)
     {
-        if (empty($this->areas[$area])) {
-            throw new \RuntimeException("Area {$area} not found.");
-        }
-
         $this->areas[$area] = $value;
     }
 
     /**
      * @param string $area
+     *
      * @return null|array
      */
     public function getArea($area)
@@ -115,26 +115,6 @@ class Template implements TemplateInterface
         return $this->variables;
     }
 
-    /**
-     * @param $array
-     * @param $key
-     * @return mixed
-     */
-    private function getArrayValue(&$array, $key)
-    {
-        $index = explode('.', $key, 2);
-
-        if (false == isset($array[$index[0]])) {
-            throw new \RuntimeException("Key {$index[0]} doesn't exist.");
-        }
-
-        if (false == empty($index[1])) {
-            return $this->getArrayValue($array[$index[0]], $index[1]);
-        }
-
-        return $array[$index[0]];
-    }
-
     private function parseVariables()
     {
         $pattern = '/\{\{([ A-Z0-9._]+)\}\}/mis';
@@ -143,11 +123,11 @@ class Template implements TemplateInterface
             $tmpMatches = [];
             preg_match_all($pattern, $content, $tmpMatches);
 
-            if (false == isset($this->variables['p'][$area])) {
+            if (false == isset($this->variables['p'][$area]) || false == is_array($this->variables['p'][$area])) {
                 $this->variables['p'][$area] = [];
             }
 
-            if (false == isset($this->variables['v'][$area])) {
+            if (false == isset($this->variables['v'][$area]) || false == is_array($this->variables['v'][$area])) {
                 $this->variables['v'][$area] = [];
             }
 
@@ -160,6 +140,11 @@ class Template implements TemplateInterface
     {
         foreach ($this->areas as $area => $content) {
             $pattern = '/\{\%area '.$area.' {0,}+\%\}(.*?)\{\% {0,}+endarea {0,}+\%\}/msi';
+
+            if (false == empty($this->variables['m'][$area]['replaces'])) {
+                $this->source = str_replace(array_keys($this->variables['m'][$area]['replaces']), $this->variables['m'][$area]['replaces'], $this->source);
+            }
+
             $this->source = preg_replace($pattern, $content, $this->source);
         }
     }
@@ -187,11 +172,85 @@ class Template implements TemplateInterface
     {
         foreach ($this->areas as $area => $content) {
             $this->areas[$area] = str_replace($this->variables['p'][$area], $this->variables['v'][$area], $content);
+
+            $this->replaceForMethods($area);
         }
     }
 
     /**
+     * @param string $area
+     */
+    private function replaceForMethods($area)
+    {
+        if (false == empty($this->variables['m'][$area])) {
+            $this->areas[$area] = str_replace(array_keys($this->variables['m'][$area]['replaces']), $this->variables['m'][$area]['replaces'], $this->areas[$area]);
+        }
+    }
+
+    private function parseForMethodsVariables()
+    {
+        foreach (array_keys($this->areas) as $area) {
+            $this->parseAreaForMethodsVariables($area);
+        }
+    }
+
+    /**
+     * @param string $area
+     */
+    private function parseAreaForMethodsVariables($area)
+    {
+        if (empty($this->variables['m'][$area]) || false == is_array($this->variables['m'][$area])) {
+            return;
+        }
+
+        foreach ($this->variables['m'][$area] as $index => $method) {
+            if (false == isset($this->values[$method['array']]) || false == is_array($this->values[$method['array']])) {
+                throw new \RuntimeException("Variable {$method['array']} is not defined or is not array");
+            }
+
+            $pattern = "/\{\{ {0,}+{$method['variable']}.{0,1}([A-Z0-9._]+) {0,}+\}\}/mis";
+            preg_match_all($pattern, $method['body'], $matches);
+
+            $replace = $method['body'];
+
+            foreach ($this->values[$method['array']] as $idx => $v) {
+                foreach ($matches[1] as $index => $match) {
+                    $replace = str_replace($matches[0][$index], $this->getArrayValue($v, $match), $replace);
+                }
+
+                if ($idx + 1 < count($this->values[$method['array']])) {
+                    $replace .= $method['body'];
+                }
+
+                $this->variables['m'][$area]['replaces'][$method['id']] = $replace;
+            }
+        }
+    }
+
+    /**
+     * @param $array
+     * @param $key
+     *
+     * @return mixed
+     */
+    private function getArrayValue($array, $key)
+    {
+        $index = explode('.', $key, 2);
+
+        if (false == isset($array[$index[0]])) {
+            throw new \RuntimeException("Key {$index[0]} doesn't exist.");
+        }
+
+        if (false == empty($index[1])) {
+            return $this->getArrayValue($array[$index[0]], $index[1]);
+        }
+
+        return $array[$index[0]];
+    }
+
+    /**
      * @param array $variables
+     *
      * @return array
      */
     private function trimVariables(array $variables)
@@ -213,10 +272,61 @@ class Template implements TemplateInterface
         if (false == empty($areas[0])) {
             $this->areas = $this->mapAreas($areas);
         }
+
+        $methods = [];
+
+        foreach ($this->areas as $area => $content) {
+            $methods[$area] = $this->parseForMethods($content);
+        }
+
+        $this->replaceForMethodBody($methods);
+    }
+
+    /**
+     * @param array $methods
+     */
+    private function replaceForMethodBody(array $methods)
+    {
+        foreach ($methods as $area => $method) {
+            if (empty($method)) {
+                continue;
+            }
+
+            $this->variables['m'][$area] = $method;
+
+            foreach ($this->variables['m'][$area] as $method) {
+                $this->areas[$area] = str_replace($method['area'], $method['id'], $this->areas[$area]);
+            }
+        }
+    }
+
+    private function parseForMethods($content)
+    {
+        $pattern = '/\{\% {0,}+for ([A-Z0-9_.:]+) in ([A-Z0-9_.:]+) {0,}+\%}(.*?)\{\% {0,}+endfor {0,}+\%\}/mis';
+        preg_match_all($pattern, $content, $matches);
+
+        if (empty($matches[0])) {
+            return false;
+        }
+
+        $data = [];
+
+        foreach ($matches[0] as $index => $body) {
+            $data[] = [
+                'area' => $body,
+                'variable' => $matches[1][$index],
+                'array' => $matches[2][$index],
+                'body' => $matches[3][$index],
+                'id' => uniqid('for_', true),
+            ];
+        }
+
+        return $data;
     }
 
     /**
      * @param array $areas
+     *
      * @return array
      */
     private function mapAreas(array $areas)

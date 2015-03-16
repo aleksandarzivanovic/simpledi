@@ -16,9 +16,21 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
     return $response->render('test.html', [
         'array' => [
-            'key' => [
-                'value' => 'This is response value',
+            [
+                'key' => [
+                    'value' => 'This is response value',
+                ],
+                'test' => 'asd',
+                'coa' => 'brat',
+            ],
+            [
+                'key' => [
+                    'value' => 'coa',
+                ],
+                'test' => 'pera',
+                'coa' => 'jo jo jo',
             ],
         ],
+        'arsad' => ['test', 'asd'],
     ]);
 });

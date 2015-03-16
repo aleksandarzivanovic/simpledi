@@ -39,7 +39,9 @@ class Router implements RouterInterface
      * @param string $route
      * @param string $method
      * @param callable $callback
+     *
      * @return RouterInterface|$this
+     *
      * @throws \RuntimeException
      */
     public function add($route, $method, callable $callback)
@@ -63,8 +65,8 @@ class Router implements RouterInterface
     }
 
     /**
-     *
      * @return $this|null
+     *
      * @throws \RuntimeException
      */
     public function loadController()
@@ -90,8 +92,8 @@ class Router implements RouterInterface
     }
 
     /**
-     *
      * @return \System\Http\Response\ResponseInterface
+     *
      * @throws \RuntimeException
      */
     public function run()
@@ -133,7 +135,7 @@ class Router implements RouterInterface
         $callback = null;
         $lastCount = 999;
 
-        /**
+        /*
          * The one with least parameters should be called.
          * Why? Imagine you have route /user/{id}/{action} and /user/{id}/delete
          * Without this route /user/{id}/delete will be counted as /user/{id}/{action} if it is registered first
@@ -156,10 +158,11 @@ class Router implements RouterInterface
     }
 
     /**
-     *
      * @param  callable $callback
      * @param  array $parameters
+     *
      * @return ResponseInterface
+     *
      * @throws \RuntimeException
      */
     private function callCallback(callable $callback, array $parameters = array())
@@ -183,8 +186,8 @@ class Router implements RouterInterface
     }
 
     /**
-     *
      * @param  array $parameters
+     *
      * @return array
      */
     private function mapParameters(array $parameters)
@@ -200,6 +203,7 @@ class Router implements RouterInterface
 
     /**
      * @param $route
+     *
      * @return array
      */
     private function routeParameters($route)
@@ -217,6 +221,7 @@ class Router implements RouterInterface
 
     /**
      * @param $route
+     *
      * @return string
      */
     private function routeToRegex($route)
@@ -236,6 +241,7 @@ class Router implements RouterInterface
 
     /**
      * @param $route
+     *
      * @return array
      */
     private function routeToArray($route)
@@ -244,10 +250,10 @@ class Router implements RouterInterface
     }
 
     /**
-     *
      * @param string $regex
      * @param string $route
      * @param array $matches
+     *
      * @return bool
      */
     private function getRequestParameters($regex, $route, array &$matches = array())

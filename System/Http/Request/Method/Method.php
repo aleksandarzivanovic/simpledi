@@ -16,7 +16,6 @@ class Method implements MethodInterface
     );
 
     /**
-     *
      * @param string $method
      */
     public function __construct($method)
@@ -35,6 +34,7 @@ class Method implements MethodInterface
     /**
      * @param callable $callback
      * @param array $arguments
+     *
      * @return bool|mixed
      */
     public function isGet(callable $callback = null, array $arguments = array())
@@ -45,6 +45,7 @@ class Method implements MethodInterface
     /**
      * @param callable $callback
      * @param array $arguments
+     *
      * @return bool|mixed
      */
     public function isPost(callable $callback = null, array $arguments = array())
@@ -55,6 +56,7 @@ class Method implements MethodInterface
     /**
      * @param callable $callback
      * @param array $arguments
+     *
      * @return bool|mixed
      */
     public function isPut(callable $callback = null, array $arguments = array())
@@ -65,6 +67,7 @@ class Method implements MethodInterface
     /**
      * @param callable $callback
      * @param array $arguments
+     *
      * @return bool|mixed
      */
     public function isDelete(callable $callback = null, array $arguments = array())
@@ -73,10 +76,10 @@ class Method implements MethodInterface
     }
 
     /**
-     *
      * @param string $type
      * @param callable $callback
      * @param array $arguments
+     *
      * @return bool|mixed
      */
     private function isType($type, callable $callback = null, array $arguments = array())
@@ -94,6 +97,7 @@ class Method implements MethodInterface
 
     /**
      * @param string $method
+     *
      * @throws \RuntimeException
      */
     private function factory($method)
@@ -111,6 +115,7 @@ class Method implements MethodInterface
 
     /**
      * @param type $method
+     *
      * @return \System\Http\Request\Method\Method
      */
     public function setMethod($method)

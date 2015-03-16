@@ -10,12 +10,14 @@ interface SessionInterface
     /**
      * @param string|array $name
      * @param mixed $value
+     *
      * @return SessionInterface
      */
     public function add($name, $value = null);
 
     /**
      * @param string|array $name
+     *
      * @return mixed
      */
     public function get($name);
@@ -27,6 +29,7 @@ interface SessionInterface
 
     /**
      * @param string $name
+     *
      * @return mixed
      */
     public function getOneTime($name);
@@ -34,6 +37,7 @@ interface SessionInterface
     /**
      * @param string $name
      * @param string $value
+     *
      * @return mixed
      */
     public function addOneTime($name, $value = null);

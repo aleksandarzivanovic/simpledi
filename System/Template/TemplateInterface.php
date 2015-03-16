@@ -32,6 +32,7 @@ interface TemplateInterface
 
     /**
      * @param string $area
+     *
      * @return null|array
      */
     public function getArea($area);
