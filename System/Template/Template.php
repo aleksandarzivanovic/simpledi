@@ -39,6 +39,7 @@ class Template implements TemplateInterface
      */
     public function load($file, $child = null)
     {
+        $this->file = $file;
         $this->child = $child;
 
         if ($this->child) {
@@ -47,16 +48,15 @@ class Template implements TemplateInterface
             $this->getCache($file);
         }
 
-        if ($this->cached) {
+        $this->source = file_get_contents($this->file);
+
+        if ($this->validateCache()) {
             return;
         }
 
         if (false == is_file($file)) {
             throw new \RuntimeException("Template {$file} is not file");
         }
-
-        $this->file = $file;
-        $this->source = file_get_contents($this->file);
 
         $this->parseAreas();
         $this->parseVariables();
@@ -70,7 +70,7 @@ class Template implements TemplateInterface
      */
     public function render(array $values = [])
     {
-        if ($this->cached && is_file($this->cached)) {
+        if ($this->cached) {
             extract($values);
             include $this->cached;
 
@@ -100,6 +100,25 @@ class Template implements TemplateInterface
         return true;
     }
 
+    private function validateCache()
+    {
+        if (false == $this->cached || false == is_file($this->cached)) {
+            return false;
+        }
+
+        $cacheTime = filemtime($this->cached);
+        $fileTime = filemtime($this->file);
+
+        if ($fileTime > $cacheTime) {
+            unlink($this->cached);
+            $this->cached = null;
+
+            return false;
+        }
+
+        return true;
+    }
+
     private function updateCache()
     {
         if ($this->child) {
@@ -110,7 +129,7 @@ class Template implements TemplateInterface
 
         $cache = $this->getCachePath($file);
 
-        $fileHandler = fopen($cache, 'a');
+        $fileHandler = fopen($cache, 'a+');
         fwrite($fileHandler, $this->source);
         fclose($fileHandler);
 
