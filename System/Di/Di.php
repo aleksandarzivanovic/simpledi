@@ -16,7 +16,6 @@ class Di implements DiInterface
     protected $_diContainer = array();
 
     /**
-     *
      * @throws \RuntimeException
      */
     protected function __construct()
@@ -57,6 +56,7 @@ class Di implements DiInterface
      * @param string $class
      * @param bool $singleton
      * @param array $customArgs
+     *
      * @return object
      */
     public function get($class, $singleton = true, array $customArgs = array())
@@ -84,6 +84,7 @@ class Di implements DiInterface
 
     /**
      * @param  string $class
+     *
      * @return string|null
      */
     public function getClassAlias($class)
@@ -103,6 +104,7 @@ class Di implements DiInterface
      * @param bool $singleton
      * @param bool $loadDependencies
      * @param array $customArgs
+     *
      * @return object
      */
     private function instanceClass(
@@ -128,9 +130,10 @@ class Di implements DiInterface
     }
 
     /**
-     *
      * @param  string $class
+     *
      * @return \ReflectionClass
+     *
      * @throws \RuntimeException
      */
     private function validateClassAndGetReflection($class)
@@ -153,9 +156,9 @@ class Di implements DiInterface
     }
 
     /**
-     *
      * @param  string $class
      * @param  bool   $singleton
+     *
      * @return array
      */
     private function loadDependencies($class, $singleton = true)
@@ -172,6 +175,7 @@ class Di implements DiInterface
     /**
      * @param array $arguments
      * @param bool $singleton
+     *
      * @return array
      */
     private function parseArguments(array $arguments, $singleton = true)
@@ -198,7 +202,9 @@ class Di implements DiInterface
 
     /**
      * @param  string            $dependency
+     *
      * @return string
+     *
      * @throws \RuntimeException
      */
     private function parseDependency($dependency)
@@ -242,6 +248,7 @@ class Di implements DiInterface
     /**
      * @param string $class
      * @param string $method
+     *
      * @return array
      */
     private function callMethod($class, $method)

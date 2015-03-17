@@ -21,6 +21,7 @@ class Session implements SessionInterface
     /**
      * @param string $name
      * @param mixed $value
+     *
      * @return SessionInterface|$this
      */
     public function add($name, $value = null)
@@ -36,6 +37,7 @@ class Session implements SessionInterface
 
     /**
      * @param array $values
+     *
      * @return $this
      */
     private function addMore(array $values)
@@ -47,6 +49,7 @@ class Session implements SessionInterface
 
     /**
      * @param string $name
+     *
      * @return mixed
      */
     public function get($name)
@@ -60,6 +63,7 @@ class Session implements SessionInterface
 
     /**
      * @param array $names
+     *
      * @return array
      */
     private function getMore(array $names)
@@ -83,6 +87,7 @@ class Session implements SessionInterface
 
     /**
      * @param string $name
+     *
      * @return mixed
      */
     public function getOneTime($name)
@@ -100,6 +105,7 @@ class Session implements SessionInterface
 
     /**
      * @param array $names
+     *
      * @return array
      */
     private function getMoreOneTime(array $names)
@@ -119,6 +125,7 @@ class Session implements SessionInterface
     /**
      * @param string $name
      * @param string $value
+     *
      * @return SessionInterface
      */
     public function addOneTime($name, $value = null)

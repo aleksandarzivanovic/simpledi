@@ -33,7 +33,6 @@ class App
     }
 
     /**
-     *
      * @param string $route
      * @param callable $callback
      */
@@ -43,7 +42,6 @@ class App
     }
 
     /**
-     *
      * @param string $route
      * @param callable $callback
      */
@@ -53,7 +51,6 @@ class App
     }
 
     /**
-     *
      * @param string $route
      * @param callable $callback
      */
@@ -63,7 +60,6 @@ class App
     }
 
     /**
-     *
      * @param string $route
      * @param callable $callback
      */

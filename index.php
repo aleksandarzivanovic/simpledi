@@ -4,7 +4,7 @@ session_start();
 
 use System\Application\App;
 
-error_reporting(E_ALL | E_ERROR | E_NOTICE | E_WARNING);
+error_reporting(E_ERROR | E_WARNING);
 ini_set('display_errors', true);
 spl_autoload_register(function ($class) {
     $file = str_replace('\\', '/', $class).'.php';

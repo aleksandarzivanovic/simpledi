@@ -6,6 +6,8 @@ interface TemplateInterface
 {
     /**
      * @param array $values
+     *
+     * @return bool
      */
     public function render(array $values = []);
 
@@ -32,6 +34,7 @@ interface TemplateInterface
 
     /**
      * @param string $area
+     *
      * @return null|array
      */
     public function getArea($area);

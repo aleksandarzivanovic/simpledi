@@ -14,10 +14,19 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
-    return $response->render('test.html', [
+    return $response->render('Views/Partial/child.html', [
         'array' => [
-            'key' => [
-                'value' => 'This is response value',
+            [
+                'type' => 'Wood',
+                'position' => 'Forest',
+            ],
+            [
+                'type' => 'Sand',
+                'position' => 'Desert',
+            ],
+            [
+                'type' => 'Water',
+                'position' => 'Ocean',
             ],
         ],
     ]);

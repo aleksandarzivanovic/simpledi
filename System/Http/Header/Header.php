@@ -13,8 +13,8 @@ class Header implements HeaderInterface
     }
 
     /**
-     *
      * @param string $header
+     *
      * @return string|array|null
      */
     public function getHeader($header)
@@ -35,9 +35,9 @@ class Header implements HeaderInterface
     }
 
     /**
-     *
      * @param string $header
      * @param string|array $value
+     *
      * @return HeaderInterface|$this
      */
     public function setHeader($header, $value)

@@ -110,6 +110,7 @@ class Parameter implements ParameterInterface
 
     /**
      * @param $parameter
+     *
      * @return string
      */
     private function cleanParameterPlaceholder($parameter)

@@ -13,6 +13,7 @@ interface RequestInterface
 
     /**
      * @param string $header
+     *
      * @return string|null
      */
     public function getHeader($header);
@@ -25,13 +26,14 @@ interface RequestInterface
     /**
      * @param string $data
      * @param MethodInterface $method
+     *
      * @return string|array|object|null
      */
     public function getRequestData($data, MethodInterface $method);
 
     /**
-     *
      * @param MethodInterface $method
+     *
      * @return array
      */
     public function getRequestDataArray(MethodInterface $method);

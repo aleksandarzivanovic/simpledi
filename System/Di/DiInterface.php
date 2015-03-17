@@ -6,6 +6,7 @@ interface DiInterface
 {
     /**
      * @param  string $class
+     *
      * @return object
      */
     public function get($class);
