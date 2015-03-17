@@ -65,6 +65,7 @@ class Template implements TemplateInterface
 
     /**
      * @param array $values
+     *
      * @return bool
      */
     public function render(array $values = [])
@@ -85,7 +86,6 @@ class Template implements TemplateInterface
             } else {
                 $child = $this->file;
             }
-
 
             return $this->parent->render($values, $child);
         }
@@ -482,12 +482,13 @@ class Template implements TemplateInterface
 
     /**
      * @param string $file
+     *
      * @return string
      */
     private function getCachePath($file)
     {
         $file = str_replace('/', '_', $file);
-        $cacheFile = $this->viewCachePath . '/' . trim($file, '/') . '.php';
+        $cacheFile = $this->viewCachePath.'/'.trim($file, '/').'.php';
 
         return $cacheFile;
     }

@@ -28,6 +28,6 @@ App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id)
                 'type' => 'Water',
                 'position' => 'Ocean',
             ],
-        ]
+        ],
     ]);
 });
