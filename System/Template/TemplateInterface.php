@@ -6,6 +6,8 @@ interface TemplateInterface
 {
     /**
      * @param array $values
+     *
+     * @return bool
      */
     public function render(array $values = []);
 

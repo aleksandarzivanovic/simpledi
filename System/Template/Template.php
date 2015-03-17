@@ -24,11 +24,33 @@ class Template implements TemplateInterface
     /** @var array */
     private $values = [];
 
+    /** @var string|null */
+    private $cached = null;
+
+    /** @var string */
+    private $viewCachePath = 'Cache/views';
+
+    /** @var string */
+    private $child;
+
     /**
      * @param string $file
+     * @param string|null $child
      */
-    public function load($file)
+    public function load($file, $child = null)
     {
+        $this->child = $child;
+
+        if ($this->child) {
+            $this->getCache($this->child);
+        } else {
+            $this->getCache($file);
+        }
+
+        if ($this->cached) {
+            return;
+        }
+
         if (false == is_file($file)) {
             throw new \RuntimeException("Template {$file} is not file");
         }
@@ -43,23 +65,67 @@ class Template implements TemplateInterface
 
     /**
      * @param array $values
+     * @return bool
      */
     public function render(array $values = [])
     {
+        if ($this->cached && is_file($this->cached)) {
+            extract($values);
+            include $this->cached;
+
+            return true;
+        }
+
         if ($this->parent instanceof TemplateInterface) {
             $this->parent->setAreas($this->areas);
             $this->parent->setVariables($this->variables);
 
-            return $this->parent->render($values);
+            if ($this->child) {
+                $child = $this->child;
+            } else {
+                $child = $this->file;
+            }
+
+
+            return $this->parent->render($values, $child);
         }
 
         $this->setRenderVariables($values);
         $this->parseForMethodsVariables();
-        $this->replaceRenderVariables();
-        $this->replaceAreas();
         $this->preRender();
 
-        echo $this->source;
+        $this->updateCache();
+        $this->render($values);
+
+        return true;
+    }
+
+    private function updateCache()
+    {
+        if ($this->child) {
+            $file = $this->child;
+        } else {
+            $file = $this->file;
+        }
+
+        $cache = $this->getCachePath($file);
+
+        $fileHandler = fopen($cache, 'a');
+        fwrite($fileHandler, $this->source);
+        fclose($fileHandler);
+
+        if ($fileHandler) {
+            $this->cached = $cache;
+        }
+    }
+
+    private function replaceTemplateToPhpVariables()
+    {
+        $pattern = '/\{\{ {0,}+([A-Z._-]+) {0,}+\}\}/msi';
+        preg_match_all($pattern, $this->source, $matches);
+
+        $replaces = $this->replaceVariablesWithPhp($matches);
+        $this->source = str_replace(array_keys($replaces), $replaces, $this->source);
     }
 
     /**
@@ -147,6 +213,8 @@ class Template implements TemplateInterface
 
             $this->source = preg_replace($pattern, $content, $this->source);
         }
+
+        $this->replaceTemplateToPhpVariables();
     }
 
     /**
@@ -156,34 +224,6 @@ class Template implements TemplateInterface
     {
         foreach ($variables as $variable => $value) {
             $this->values[$variable] = $value;
-        }
-    }
-
-    private function replaceRenderVariables()
-    {
-        foreach ($this->variables['v'] as $area => $variables) {
-            foreach ($variables as $index => $variable) {
-                $this->variables['v'][$area][$index] = $this->getArrayValue($this->values, $variable);
-            }
-        }
-    }
-
-    private function replaceAreas()
-    {
-        foreach ($this->areas as $area => $content) {
-            $this->areas[$area] = str_replace($this->variables['p'][$area], $this->variables['v'][$area], $content);
-
-            $this->replaceForMethods($area);
-        }
-    }
-
-    /**
-     * @param string $area
-     */
-    private function replaceForMethods($area)
-    {
-        if (false == empty($this->variables['m'][$area])) {
-            $this->areas[$area] = str_replace(array_keys($this->variables['m'][$area]['replaces']), $this->variables['m'][$area]['replaces'], $this->areas[$area]);
         }
     }
 
@@ -294,8 +334,8 @@ class Template implements TemplateInterface
 
             $this->variables['m'][$area] = $method;
 
-            foreach ($this->variables['m'][$area] as $method) {
-                $this->areas[$area] = str_replace($method['area'], $method['id'], $this->areas[$area]);
+            foreach ($this->variables['m'][$area] as $m) {
+                $this->areas[$area] = str_replace($m['area'], $m['snippet'], $this->areas[$area]);
             }
         }
     }
@@ -309,19 +349,78 @@ class Template implements TemplateInterface
             return false;
         }
 
+        $snippet = file_get_contents('System/Template/Snippets/foreach.code');
+
         $data = [];
 
         foreach ($matches[0] as $index => $body) {
-            $data[] = [
+            $currentSnippet = str_replace(
+                ['{array}', '{variable}'],
+                ['$'.$matches[2][$index], '$'.$matches[1][$index]],
+                $snippet
+            );
+            $d = [
                 'area' => $body,
                 'variable' => $matches[1][$index],
                 'array' => $matches[2][$index],
                 'body' => $matches[3][$index],
                 'id' => uniqid('for_', true),
+                'snippet' => $currentSnippet,
             ];
+
+            $this->compileTemplate($d);
+
+            $data[] = $d;
         }
 
         return $data;
+    }
+
+    private function compileTemplate(&$method)
+    {
+        $body = $method['body'];
+        $pattern = '/\{\{ {0,}+([A-Z._-]+) {0,}+\}\}/msi';
+        preg_match_all($pattern, $body, $matches);
+
+        if (empty($matches[1])) {
+            return;
+        }
+
+        $replaces = $this->replaceVariablesWithPhp($matches);
+
+        $method['snippet'] = str_replace('{body}', $this->replaceVariables($replaces, $method['body']), $method['snippet']);
+    }
+
+    private function replaceVariablesWithPhp(array $matches)
+    {
+        $replaces = [];
+
+        foreach ($matches[1] as $index => $match) {
+            $extracted = explode('.', $match);
+            $v = $extracted[0];
+            unset($extracted[0]);
+
+            if (empty($extracted)) {
+                $variable = '<?php echo $'.$v.';?>';
+            } else {
+                $variable = '<?php echo $'.$v.'["'.implode('"]["', $extracted).'"];?>';
+            }
+
+            $replaces[$matches[0][$index]] = $variable;
+        }
+
+        return $replaces;
+    }
+
+    private function replaceVariables(array $replaces, $body)
+    {
+        $body = str_replace(
+            array_keys($replaces),
+            $replaces,
+            $body
+        );
+
+        return $body;
     }
 
     /**
@@ -342,7 +441,7 @@ class Template implements TemplateInterface
 
     private function getParent()
     {
-        $pattern = '/\{\%parent \"([A-Za-z._]+)\" {0,}+\%\}/i';
+        $pattern = '/\{\%parent \"([A-Za-z._\\/]+)\" {0,}+\%\}/i';
         $parent = [];
 
         preg_match_all($pattern, $this->source, $parent);
@@ -358,7 +457,38 @@ class Template implements TemplateInterface
         }
 
         $template = Di::getInstance()->get('system.template', false);
-        $template->load($parent[1][0]);
+
+        if ($this->child) {
+            $child = $this->child;
+        } else {
+            $child = $this->file;
+        }
+
+        $template->load($parent[1][0], $child);
         $this->parent = $template;
+    }
+
+    /**
+     * @param string $file
+     */
+    private function getCache($file)
+    {
+        $cacheFile = $this->getCachePath($file);
+
+        if (is_file($cacheFile)) {
+            $this->cached = $cacheFile;
+        }
+    }
+
+    /**
+     * @param string $file
+     * @return string
+     */
+    private function getCachePath($file)
+    {
+        $file = str_replace('/', '_', $file);
+        $cacheFile = $this->viewCachePath . '/' . trim($file, '/') . '.php';
+
+        return $cacheFile;
     }
 }

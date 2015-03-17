@@ -1,0 +1,10 @@
+{%parent "Views/Partial/parent.html" %}
+
+{%area content%}
+    {% for value in array %}
+        <p>
+            Type: <em>{{ value.type }}</em><br />
+            Position: <em>{{ value.position }}</em><br />
+        </p>
+    {% endfor %}
+{% endarea %}

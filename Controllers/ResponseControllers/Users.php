@@ -14,23 +14,20 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
-    return $response->render('test.html', [
+    return $response->render('Views/Partial/child.html', [
         'array' => [
             [
-                'key' => [
-                    'value' => 'This is response value',
-                ],
-                'test' => 'asd',
-                'coa' => 'brat',
+                'type' => 'Wood',
+                'position' => 'Forest',
             ],
             [
-                'key' => [
-                    'value' => 'coa',
-                ],
-                'test' => 'pera',
-                'coa' => 'jo jo jo',
+                'type' => 'Sand',
+                'position' => 'Desert',
             ],
-        ],
-        'arsad' => ['test', 'asd'],
+            [
+                'type' => 'Water',
+                'position' => 'Ocean',
+            ],
+        ]
     ]);
 });
