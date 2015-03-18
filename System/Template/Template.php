@@ -49,8 +49,10 @@ class Template implements TemplateInterface
         }
 
         $this->source = file_get_contents($this->file);
+        $this->getParent();
+        $validParent = $this->parent instanceof TemplateInterface;
 
-        if ($this->validateCache()) {
+        if ($this->validateCache() && false == $validParent || $validParent && $this->parent->validateCache()) {
             return;
         }
 
@@ -60,7 +62,6 @@ class Template implements TemplateInterface
 
         $this->parseAreas();
         $this->parseVariables();
-        $this->getParent();
     }
 
     /**
@@ -70,7 +71,7 @@ class Template implements TemplateInterface
      */
     public function render(array $values = [])
     {
-        if ($this->cached) {
+        if ($this->cached && is_file($this->cached)) {
             extract($values);
             include $this->cached;
 
@@ -100,7 +101,7 @@ class Template implements TemplateInterface
         return true;
     }
 
-    private function validateCache()
+    public function validateCache()
     {
         if (false == $this->cached || false == is_file($this->cached)) {
             return false;
@@ -117,34 +118,6 @@ class Template implements TemplateInterface
         }
 
         return true;
-    }
-
-    private function updateCache()
-    {
-        if ($this->child) {
-            $file = $this->child;
-        } else {
-            $file = $this->file;
-        }
-
-        $cache = $this->getCachePath($file);
-
-        $fileHandler = fopen($cache, 'a+');
-        fwrite($fileHandler, $this->source);
-        fclose($fileHandler);
-
-        if ($fileHandler) {
-            $this->cached = $cache;
-        }
-    }
-
-    private function replaceTemplateToPhpVariables()
-    {
-        $pattern = '/\{\{ {0,}+([A-Z._-]+) {0,}+\}\}/msi';
-        preg_match_all($pattern, $this->source, $matches);
-
-        $replaces = $this->replaceVariablesWithPhp($matches);
-        $this->source = str_replace(array_keys($replaces), $replaces, $this->source);
     }
 
     /**
@@ -198,6 +171,34 @@ class Template implements TemplateInterface
     public function getVariables()
     {
         return $this->variables;
+    }
+
+    private function updateCache()
+    {
+        if ($this->child) {
+            $file = $this->child;
+        } else {
+            $file = $this->file;
+        }
+
+        $cache = $this->getCachePath($file);
+
+        $fileHandler = fopen($cache, 'a+');
+        fwrite($fileHandler, $this->source);
+        fclose($fileHandler);
+
+        if ($fileHandler) {
+            $this->cached = $cache;
+        }
+    }
+
+    private function replaceTemplateToPhpVariables()
+    {
+        $pattern = '/\{\{ {0,}+([A-Z._-]+) {0,}+\}\}/msi';
+        preg_match_all($pattern, $this->source, $matches);
+
+        $replaces = $this->replaceVariablesWithPhp($matches);
+        $this->source = str_replace(array_keys($replaces), $replaces, $this->source);
     }
 
     private function parseVariables()
