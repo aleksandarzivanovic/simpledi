@@ -48,4 +48,6 @@ interface TemplateInterface
      * @return array
      */
     public function getVariables();
+
+    public function validateCache();
 }
