@@ -24,7 +24,7 @@ interface RequestInterface
     public function getMethod();
 
     /**
-     * @param string $data
+     * @param string          $data
      * @param MethodInterface $method
      *
      * @return string|array|object|null

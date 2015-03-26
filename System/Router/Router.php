@@ -26,7 +26,7 @@ class Router implements RouterInterface
     private $template;
 
     /**
-     * @param RequestInterface $request
+     * @param RequestInterface  $request
      * @param TemplateInterface $template
      */
     public function __construct(RequestInterface $request, TemplateInterface $template)
@@ -36,8 +36,8 @@ class Router implements RouterInterface
     }
 
     /**
-     * @param string $route
-     * @param string $method
+     * @param string   $route
+     * @param string   $method
      * @param callable $callback
      *
      * @return RouterInterface|$this
@@ -158,8 +158,8 @@ class Router implements RouterInterface
     }
 
     /**
-     * @param  callable $callback
-     * @param  array $parameters
+     * @param callable $callback
+     * @param array    $parameters
      *
      * @return ResponseInterface
      *
@@ -186,7 +186,7 @@ class Router implements RouterInterface
     }
 
     /**
-     * @param  array $parameters
+     * @param array $parameters
      *
      * @return array
      */
@@ -252,7 +252,7 @@ class Router implements RouterInterface
     /**
      * @param string $regex
      * @param string $route
-     * @param array $matches
+     * @param array  $matches
      *
      * @return bool
      */

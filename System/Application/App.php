@@ -33,7 +33,7 @@ class App
     }
 
     /**
-     * @param string $route
+     * @param string   $route
      * @param callable $callback
      */
     public static function get($route, callable $callback)
@@ -42,7 +42,7 @@ class App
     }
 
     /**
-     * @param string $route
+     * @param string   $route
      * @param callable $callback
      */
     public static function post($route, callable $callback)
@@ -51,7 +51,7 @@ class App
     }
 
     /**
-     * @param string $route
+     * @param string   $route
      * @param callable $callback
      */
     public static function put($route, callable $callback)
@@ -60,7 +60,7 @@ class App
     }
 
     /**
-     * @param string $route
+     * @param string   $route
      * @param callable $callback
      */
     public static function delete($route, callable $callback)

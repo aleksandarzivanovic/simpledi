@@ -51,7 +51,7 @@ class Request extends RequestFactory implements RequestInterface
     }
 
     /**
-     * @param string $data
+     * @param string          $data
      * @param MethodInterface $method
      *
      * @return string|null

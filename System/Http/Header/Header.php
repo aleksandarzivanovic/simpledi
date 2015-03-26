@@ -35,7 +35,7 @@ class Header implements HeaderInterface
     }
 
     /**
-     * @param string $header
+     * @param string       $header
      * @param string|array $value
      *
      * @return HeaderInterface|$this

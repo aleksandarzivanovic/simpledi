@@ -5,17 +5,21 @@
     <title>ViBE - PHP Framework</title>
 </head>
 <body>
-    
-    <?php foreach ($array as $value) { ?>
-    
-        <p>
-            Type: <em><?php echo $value["type"];?></em><br />
-            Position: <em><?php echo $value["position"];?></em><br />
-        </p>
-    
-<?php } ?>
 
-    
+    <?php foreach ($array as $value) {
+    ?>
+
+        <p>
+            Type: <em><?php echo $value["type"];
+    ?></em><br />
+            Position: <em><?php echo $value["position"];
+    ?></em><br />
+        </p>
+
+<?php 
+} ?>
+
+
 testcasdasd
 
 </body>

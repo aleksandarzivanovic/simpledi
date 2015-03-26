@@ -16,32 +16,32 @@ interface MethodInterface
     public function getMethod();
 
     /**
-     * @param  callable   $callback
-     * @param  array      $arguments
+     * @param callable $callback
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
     public function isGet(callable $callback = null, array $arguments = array());
 
     /**
-     * @param  callable   $callback
-     * @param  array      $arguments
+     * @param callable $callback
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
     public function isPost(callable $callback = null, array $arguments = array());
 
     /**
-     * @param  callable   $callback
-     * @param  array      $arguments
+     * @param callable $callback
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
     public function isPut(callable $callback = null, array $arguments = array());
 
     /**
-     * @param  callable   $callback
-     * @param  array      $arguments
+     * @param callable $callback
+     * @param array    $arguments
      *
      * @return bool|mixed
      */

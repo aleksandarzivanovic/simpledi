@@ -34,7 +34,7 @@ class Template implements TemplateInterface
     private $child;
 
     /**
-     * @param string $file
+     * @param string      $file
      * @param string|null $child
      */
     public function load($file, $child = null)

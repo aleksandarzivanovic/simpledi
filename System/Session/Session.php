@@ -20,7 +20,7 @@ class Session implements SessionInterface
 
     /**
      * @param string $name
-     * @param mixed $value
+     * @param mixed  $value
      *
      * @return SessionInterface|$this
      */

@@ -54,8 +54,8 @@ class Di implements DiInterface
 
     /**
      * @param string $class
-     * @param bool $singleton
-     * @param array $customArgs
+     * @param bool   $singleton
+     * @param array  $customArgs
      *
      * @return object
      */
@@ -83,7 +83,7 @@ class Di implements DiInterface
     }
 
     /**
-     * @param  string $class
+     * @param string $class
      *
      * @return string|null
      */
@@ -101,9 +101,9 @@ class Di implements DiInterface
     /**
      * @param \ReflectionClass $classReflection
      * @param $alias
-     * @param bool $singleton
-     * @param bool $loadDependencies
-     * @param array $customArgs
+     * @param bool             $singleton
+     * @param bool             $loadDependencies
+     * @param array            $customArgs
      *
      * @return object
      */
@@ -130,7 +130,7 @@ class Di implements DiInterface
     }
 
     /**
-     * @param  string $class
+     * @param string $class
      *
      * @return \ReflectionClass
      *
@@ -156,8 +156,8 @@ class Di implements DiInterface
     }
 
     /**
-     * @param  string $class
-     * @param  bool   $singleton
+     * @param string $class
+     * @param bool   $singleton
      *
      * @return array
      */
@@ -174,7 +174,7 @@ class Di implements DiInterface
 
     /**
      * @param array $arguments
-     * @param bool $singleton
+     * @param bool  $singleton
      *
      * @return array
      */
@@ -201,7 +201,7 @@ class Di implements DiInterface
     }
 
     /**
-     * @param  string            $dependency
+     * @param string $dependency
      *
      * @return string
      *

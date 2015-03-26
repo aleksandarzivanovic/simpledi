@@ -9,7 +9,7 @@ interface SessionInterface
 
     /**
      * @param string|array $name
-     * @param mixed $value
+     * @param mixed        $value
      *
      * @return SessionInterface
      */

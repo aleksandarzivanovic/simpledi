@@ -5,7 +5,7 @@ namespace System\Di;
 interface DiInterface
 {
     /**
-     * @param  string $class
+     * @param string $class
      *
      * @return object
      */

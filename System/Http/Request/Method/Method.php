@@ -33,7 +33,7 @@ class Method implements MethodInterface
 
     /**
      * @param callable $callback
-     * @param array $arguments
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
@@ -44,7 +44,7 @@ class Method implements MethodInterface
 
     /**
      * @param callable $callback
-     * @param array $arguments
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
@@ -55,7 +55,7 @@ class Method implements MethodInterface
 
     /**
      * @param callable $callback
-     * @param array $arguments
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
@@ -66,7 +66,7 @@ class Method implements MethodInterface
 
     /**
      * @param callable $callback
-     * @param array $arguments
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
@@ -76,9 +76,9 @@ class Method implements MethodInterface
     }
 
     /**
-     * @param string $type
+     * @param string   $type
      * @param callable $callback
-     * @param array $arguments
+     * @param array    $arguments
      *
      * @return bool|mixed
      */
