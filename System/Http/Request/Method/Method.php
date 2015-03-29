@@ -102,7 +102,7 @@ class Method implements MethodInterface
      */
     private function factory($method)
     {
-        if (true == empty($method)) {
+        if (empty($method)) {
             throw new \RuntimeException('Method may not be empty');
         }
 

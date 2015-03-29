@@ -14,20 +14,27 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
+    $di = System\Di\Di::getInstance();
+    /* @var $config System\Config\ConfigInterface */
+    $config = $di->get('system.config');
+
+    $config->loadConfig('data/storage.json');
+    var_dump($config->get('mysql'));
+
     return $response->render('Views/Partial/child.html', [
-        'array' => [
-            [
-                'type' => 'Wood',
-                'position' => 'Forest',
-            ],
-            [
-                'type' => 'Sand',
-                'position' => 'Desert',
-            ],
-            [
-                'type' => 'Water',
-                'position' => 'Ocean',
-            ],
-        ],
+                'array' => [
+                    [
+                        'type' => 'Wood',
+                        'position' => 'Forest',
+                    ],
+                    [
+                        'type' => 'Sand',
+                        'position' => 'Desert',
+                    ],
+                    [
+                        'type' => 'Water',
+                        'position' => 'Ocean',
+                    ],
+                ],
     ]);
 });

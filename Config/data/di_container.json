@@ -29,5 +29,9 @@
     },
     "system.template": {
         "class": "System\\Template\\Template"
+    },
+    "system.config": {
+        "class": "System\\Config\\Config",
+        "arguments": ["#Config"]
     }
 }

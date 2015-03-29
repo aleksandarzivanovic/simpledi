@@ -16,4 +16,8 @@ spl_autoload_register(function ($class) {
     }
 });
 
-App::init();
+//App::init();
+
+$c = new System\Cache\Cache([]);
+
+var_dump($c['test']);

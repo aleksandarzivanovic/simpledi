@@ -1,0 +1,10 @@
+{
+    "mysql": {
+        "hostname": "localhost",
+        "username": "root",
+        "password": "",
+        "database": "vibe",
+        "port": "3306"
+
+    }
+}
