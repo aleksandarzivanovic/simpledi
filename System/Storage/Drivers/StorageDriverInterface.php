@@ -9,4 +9,6 @@ interface StorageDriverInterface extends StorageCRUDInterface {
      * @return string
      */
     public function getName();
+    
+    public function prepare();
 }

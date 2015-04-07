@@ -6,9 +6,6 @@ use System\Storage\Drivers\StorageDriverInterface;
 
 class Storage implements StorageInterface {
 
-    /** @var string */
-    private $tableName;
-
     /** @var StorageDriverInterface */
     private $driver;
 
@@ -26,7 +23,8 @@ class Storage implements StorageInterface {
         }
 
         $this->driver = $driver;
-
+        $this->driver->prepare();
+        
         return $this;
     }
 
