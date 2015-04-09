@@ -476,7 +476,7 @@ class Template implements TemplateInterface
             throw new \RuntimeException("Template can have only 1 parent. Template: {$this->file}");
         }
 
-        $template = Di::getInstance()->get('system.template', false);
+        $template = Di::getInstance()->getDefault('system.template');
 
         if ($this->child) {
             $child = $this->child;

@@ -2,7 +2,10 @@
 
 namespace System\Storage\Drivers\Helpers;
 
-class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
+class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
+{
+    /** @var string */
+    private $tableName;
 
     /** @var array */
     private $selectFields;
@@ -13,14 +16,36 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
     /** @var string */
     private $query;
 
+    /** @var int */
+    private $limit = 0;
+
+    /** @var int */
+    private $offset = 0;
+
     /** @var string */
     private $queryType;
 
+    /** @var \mysqli */
+    private $db;
+
     /**
-     * @param string $tableName
+     * @param  \mysqli                        $db
      * @return StorageMySqlQueryBuilder|$this
      */
-    public function __construct($tableName) {
+    public function __construct(\mysqli $db)
+    {
+        $this->db = $db;
+
+        return $this;
+    }
+
+    /**
+     * @param string $tableName
+     *
+     * @return StorageMySqlQueryBuilderInterface|$this
+     */
+    public function from($tableName)
+    {
         if (empty($tableName)) {
             throw new \RuntimeException('Table name may not be empty');
         }
@@ -30,22 +55,25 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
         return $this;
     }
 
-    public function select(array $fields) {
+    public function select(array $fields = [])
+    {
         $this->queryType = self::QUERY_TYPE_SELECT;
 
         foreach ($fields as $index => $field) {
             if (is_array($field)) {
-                $fields[$index] = '`' . trim($field[0], '`') . '` as ' . trim($field[1], '`');
+                $fields[$index] = '`'.trim($field[0], '`').'` as '.trim($field[1], '`');
             } else {
-                $fields[$index] = '`' . trim($field, '`') . '`';
+                $fields[$index] = '`'.trim($field, '`').'`';
             }
         }
 
         $this->selectFields = $fields;
+
         return $this;
     }
 
-    public function where(array $criteria) {
+    public function where(array $criteria)
+    {
         foreach ($criteria as $column => $value) {
             $this->criteria['where'][$column] = $this->cleanCriteria($value);
         }
@@ -53,7 +81,8 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
         return $this;
     }
 
-    public function whereNot(array $criteria) {
+    public function whereNot(array $criteria)
+    {
         foreach ($criteria as $column => $value) {
             $this->criteria['where_not'][$column] = $this->cleanCriteria($value);
         }
@@ -61,33 +90,58 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
         return $this;
     }
 
-    private function cleanCriteria($criteria) {
+    private function cleanCriteria($criteria)
+    {
         if (is_numeric($criteria)) {
             if (false !== strpos($criteria, '.')) {
                 $criteria = floatval($criteria);
             } else {
                 $criteria = intval($criteria);
             }
-        } else if (is_array($criteria)) {
+        } elseif (is_array($criteria)) {
             $criteria = json_encode($criteria);
-        } else if (is_string($criteria)) {
-            $criteria = mysqli_real_escape_string($criteria);
+        } elseif (is_string($criteria)) {
+            $criteria = $this->db->escape_string($criteria);
         }
 
         return $criteria;
     }
 
-    private function buildFields() {
+    /**
+     * @param  int                                     $limit
+     * @return StorageMySqlQueryBuilderInterface|$this
+     */
+    public function setLimit($limit)
+    {
+        $this->limit = intval($limit);
+
+        return $this;
+    }
+
+    /**
+     * @param  int                                     $offset
+     * @return StorageMySqlQueryBuilderInterface|$this
+     */
+    public function setOffset($offset)
+    {
+        $this->offset = intval($offset);
+
+        return $this;
+    }
+
+    private function buildFields()
+    {
         $fields = '*';
 
         if (false == empty($this->selectFields)) {
-            $fields = '`' . implode('`,`', $this->selectFields) . '`';
+            $fields = implode(',', $this->selectFields);
         }
 
         return $fields;
     }
 
-    private function buildCriteria() {
+    private function buildCriteria()
+    {
         $criteria = '';
 
         if (false == empty($this->criteria['where'])) {
@@ -105,32 +159,25 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
                 $whereNot[] = $this->buildSingleCriteria($column, $value, '!=');
             }
 
-            $criteria .= ' AND ' . implode(' AND ', $whereNot);
+            $criteria .= ' AND '.implode(' AND ', $whereNot);
         }
 
         return $criteria;
     }
 
-    private function buildSingleCriteria($column, $value, $operator = '=') {
+    private function buildSingleCriteria($column, $value, $operator = '=')
+    {
         return "`{$column}` {$operator} '$value'";
     }
 
-    public function build($table, $limit = 0, $offset = 0) {
+    public function build($limit = 0, $offset = 0)
+    {
         $criteria = $this->buildCriteria();
 
         switch ($this->queryType) {
 
             case self::QUERY_TYPE_SELECT:
-                $fields = $this->buildFields();
-                $this->query = "SELECT {$fields} FROM `{$table}`";
-
-                if ($criteria) {
-                    $this->query .= " WHERE {$criteria}";
-                }
-
-                if ($limit || $offset) {
-                    $this->query .= " LIMIT {$offset}, {$limit}";
-                }
+                $this->query = $this->buildSelectQuery();
 
                 break;
             case self::QUERY_TYPE_INSERT:
@@ -144,6 +191,38 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface {
         }
 
         $this->query .= ';';
+
+        return $this;
     }
 
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    private function buildSelectQuery()
+    {
+        $this->validateTableName();
+        $fields = $this->buildFields();
+
+        $query = "SELECT {$fields} FROM `{$this->tableName}`";
+
+        $criteria = $this->buildCriteria();
+        if (false == empty($criteria)) {
+            $query .= " WHERE {$criteria}";
+        }
+
+        if ($this->limit) {
+            $query .= " LIMIT {$this->offset}, $this->limit";
+        }
+
+        return $query;
+    }
+
+    private function validateTableName()
+    {
+        if (empty($this->tableName)) {
+            throw new \RuntimeException('Table name may not be empty');
+        }
+    }
 }

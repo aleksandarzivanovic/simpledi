@@ -2,9 +2,10 @@
 
 namespace System\Storage\Drivers;
 
-interface StorageMySqlDriverInterface extends StorageDriverInterface {
+interface StorageMySqlDriverInterface extends StorageDriverInterface
+{
     /**
-     * @param string $tableName
+     * @param  string                 $tableName
      * @return StorageInterface|$this
      */
     public function setTableName($tableName);

@@ -4,13 +4,13 @@ namespace System\Storage;
 
 use System\Storage\Drivers\StorageDriverInterface;
 
-class Storage implements StorageInterface {
-
+class Storage implements StorageInterface
+{
     /** @var StorageDriverInterface */
     private $driver;
 
     /**
-     * @param StorageDriverInterface $driver
+     * @param  StorageDriverInterface $driver
      * @return StorageInterface|$this
      */
     public function setDriver(StorageDriverInterface $driver)
@@ -24,33 +24,34 @@ class Storage implements StorageInterface {
 
         $this->driver = $driver;
         $this->driver->prepare();
-        
+
         return $this;
     }
 
     /**
-     * @param array $criteria
-     * @param array $order
-     * @param int $offset
-     * @param int $limit
+     * @param  array                  $criteria
+     * @param  array                  $order
+     * @param  int                    $offset
+     * @param  array                  $fields
      * @return StorageResultInterface result
      */
-    public function get(array $criteria, array $order, $offset, $limit)
+    public function get(array $criteria, array $order = [], $offset = 0, array $fields = [])
     {
-        $result = $this->driver->get($criteria, $order, $offset, $limit);
+        $result = $this->driver->get($criteria, $order, $offset, $fields);
         $this->validateResult($result, 'get');
 
         return $result;
     }
 
     /**
-     * @param array $criteria
-     * @param array $order
-     * @param int $offset
-     * @param int $limit
+     * @param  array                    $criteria
+     * @param  array                    $order
+     * @param  int                      $offset
+     * @param  int                      $limit
+     * @param  array                    $fields
      * @return StorageResultInterface[] array of results
      */
-    public function getAll(array $criteria, array $order, $offset, $limit)
+    public function getAll(array $criteria, array $order = [], $limit = null, $offset = 0, array $fields = [])
     {
         $results = $this->driver->getAll($criteria, $order, $offset, $limit);
         foreach ($results as $result) {
@@ -61,8 +62,8 @@ class Storage implements StorageInterface {
     }
 
     /**
-     * @param array $data
-     * @return int Insert id or affected rows
+     * @param  array $data
+     * @return int   Insert id or affected rows
      */
     public function insert(array $data)
     {
@@ -70,7 +71,7 @@ class Storage implements StorageInterface {
     }
 
     /**
-     * @param array $data
+     * @param  array     $data
      * @return int[]|int array of inserted ids or number of affected rows
      */
     public function insertAll(array $data)
@@ -79,8 +80,8 @@ class Storage implements StorageInterface {
     }
 
     /**
-     * @param array $data
-     * @return int number of affected rows
+     * @param  array $data
+     * @return int   number of affected rows
      */
     public function update(array $data)
     {
@@ -88,8 +89,8 @@ class Storage implements StorageInterface {
     }
 
     /**
-     * @param array $data
-     * @return int number of affected rows
+     * @param  array $data
+     * @return int   number of affected rows
      */
     public function updateAll(array $data)
     {
@@ -97,8 +98,8 @@ class Storage implements StorageInterface {
     }
 
     /**
-     * @param array $data
-     * @return int number of deleted rows
+     * @param  array $data
+     * @return int   number of deleted rows
      */
     public function delete(array $data)
     {

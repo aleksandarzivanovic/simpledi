@@ -6,7 +6,7 @@ use System\Session\SessionInterface;
 
 App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, $id, $action) {
     /** @var SessionInterface $s */
-    $s = \System\Di\Di::getInstance()->get('system.session');
+    $s = \System\Di\Di::getInstance()->getShared('system.session');
     $s->addOneTime(['coa' => 'test', 'test' => 'asd']);
     $s->add(['coa' => 'zivanovic', 'marjan' => 'hrzic']);
 

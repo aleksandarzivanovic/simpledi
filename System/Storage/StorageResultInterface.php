@@ -2,6 +2,7 @@
 
 namespace System\Storage;
 
-interface StorageResultInterface {
+interface StorageResultInterface
+{
     public function getField($field);
 }
