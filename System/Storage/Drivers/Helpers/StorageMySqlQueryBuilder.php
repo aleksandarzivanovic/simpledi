@@ -172,13 +172,10 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
 
     public function build($limit = 0, $offset = 0)
     {
-        $criteria = $this->buildCriteria();
-
         switch ($this->queryType) {
 
             case self::QUERY_TYPE_SELECT:
                 $this->query = $this->buildSelectQuery();
-
                 break;
             case self::QUERY_TYPE_INSERT:
                 break;
