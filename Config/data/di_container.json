@@ -29,5 +29,8 @@
     },
     "system.template": {
         "class": "System\\Template\\Template"
+    },
+    "system.storage": {
+        "class": "System\\Storage\\Storage"
     }
 }

@@ -50,7 +50,7 @@ class Router implements RouterInterface
         $regex = $this->routeToRegex($route);
 
         // validate method
-        Di::getInstance()->get('system.http.request.method', false, array($method));
+        Di::getInstance()->getDefault('system.http.request.method', [$method]);
 
         if (isset($this->routes[$method][$regex])) {
             throw new \RuntimeException(sprintf('Route %s: %s already defined.', $method, $route));
@@ -73,7 +73,8 @@ class Router implements RouterInterface
     {
         $map = json_decode(file_get_contents('Config/data/router.json'), true);
 
-        $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
+        /** @var MethodInterface $method */
+        $method = Di::getInstance()->getDefault('system.http.request.method', [MethodInterface::METHOD_GET]);
         $requestRoute = trim($this->request->getRequestData('route', $method), '/');
 
         foreach ($map as $route => $file) {
@@ -98,7 +99,7 @@ class Router implements RouterInterface
      */
     public function run()
     {
-        $method = Di::getInstance()->get('system.http.request.method', false, array(MethodInterface::METHOD_GET));
+        $method = Di::getInstance()->getDefault('system.http.request.method', [MethodInterface::METHOD_GET]);
         $route = trim($this->request->getRequestData('route', $method), '/');
         $this->parseRequest($route);
 
@@ -129,7 +130,7 @@ class Router implements RouterInterface
      */
     private function parseRequest($route)
     {
-        $method = Di::getInstance()->get('system.http.request.method')->getMethod();
+        $method = Di::getInstance()->getShared('system.http.request.method')->getMethod();
         $parameters = array();
         $tmpParameters = array();
         $callback = null;
@@ -168,8 +169,8 @@ class Router implements RouterInterface
     private function callCallback(callable $callback, array $parameters = array())
     {
         $reflection = new \ReflectionFunction($callback);
-        $session = Di::getInstance()->get('system.session');
-        $response = Di::getInstance()->get('system.http.response');
+        $session = Di::getInstance()->getShared('system.session');
+        $response = Di::getInstance()->getShared('system.http.response');
         array_unshift($parameters, $response);
 
         /** @var ResponseInterface $return */

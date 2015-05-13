@@ -53,13 +53,33 @@ class Di implements DiInterface
     }
 
     /**
+     * @param  string $class
+     * @param  array  $customArguments
+     * @return object new class instance
+     */
+    public function getDefault($class, array $customArguments = [])
+    {
+        return $this->get($class, false, $customArguments);
+    }
+
+    /**
+     * @param $class
+     * @param  array  $customArguments
+     * @return object shared (singleton) class instance
+     */
+    public function getShared($class, array $customArguments = [])
+    {
+        return $this->get($class, true, $customArguments);
+    }
+
+    /**
      * @param string $class
      * @param bool   $singleton
      * @param array  $customArgs
      *
      * @return object
      */
-    public function get($class, $singleton = true, array $customArgs = array())
+    private function get($class, $singleton = true, array $customArgs = [])
     {
         if ($singleton && isset($this->loadedInstances[$class])) {
             return $this->loadedInstances[$class];
@@ -191,9 +211,9 @@ class Di implements DiInterface
             }
 
             if ($singleton) {
-                $final[] = $this->get($dependency);
+                $final[] = $this->getShared($dependency);
             } else {
-                $final[] = clone $this->get($dependency, false);
+                $final[] = clone $this->getDefault($dependency);
             }
         }
 
@@ -210,7 +230,7 @@ class Di implements DiInterface
     private function parseDependency($dependency)
     {
         /** @var ParameterInterface $parameters */
-        $parameters = self::get('system.parameter');
+        $parameters = self::getShared('system.parameter');
         $parameters->parseParameter($dependency);
 
         switch ($parameters->getParameterType()) {
@@ -253,7 +273,7 @@ class Di implements DiInterface
      */
     private function callMethod($class, $method)
     {
-        $object = $this->get($class);
+        $object = $this->getShared($class);
 
         return array(call_user_func(array($object, $method)));
     }

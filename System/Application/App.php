@@ -17,13 +17,13 @@ class App
     {
         if (false == static::$initialized) {
             /** @var ResponseInterface $response */
-            $response = Di::getInstance()->get('system.router')->loadController()->run();
+            $response = Di::getInstance()->getShared('system.router')->loadController()->run();
 
             list($file, $data) = $response->getTemplate();
 
             if (isset($file) && is_file($file)) {
                 /** @var TemplateInterface $template */
-                $template = Di::getInstance()->get('system.template');
+                $template = Di::getInstance()->getShared('system.template');
                 $template->load($file);
                 $template->render($data);
             }
@@ -38,7 +38,7 @@ class App
      */
     public static function get($route, callable $callback)
     {
-        Di::getInstance()->get('system.router')->add($route, MethodInterface::METHOD_GET, $callback);
+        Di::getInstance()->getShared('system.router')->add($route, MethodInterface::METHOD_GET, $callback);
     }
 
     /**
@@ -47,7 +47,7 @@ class App
      */
     public static function post($route, callable $callback)
     {
-        Di::getInstance()->get('system.router')->add($route, MethodInterface::METHOD_POST, $callback);
+        Di::getInstance()->getShared('system.router')->add($route, MethodInterface::METHOD_POST, $callback);
     }
 
     /**
@@ -56,7 +56,7 @@ class App
      */
     public static function put($route, callable $callback)
     {
-        Di::getInstance()->get('system.router')->add($route, MethodInterface::METHOD_PUT, $callback);
+        Di::getInstance()->getShared('system.router')->add($route, MethodInterface::METHOD_PUT, $callback);
     }
 
     /**
@@ -66,7 +66,7 @@ class App
     public static function delete($route, callable $callback)
     {
         /* @var $router RouterInterface */
-        $router = Di::getInstance()->get('system.router');
+        $router = Di::getInstance()->getShared('system.router');
 
         $router->add($route, MethodInterface::METHOD_DELETE, $callback);
     }
