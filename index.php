@@ -8,7 +8,7 @@ use System\Application\App;
 
 ini_set('display_errors', true);
 spl_autoload_register(function ($class) {
-    $file = str_replace('\\', '/', $class).'.php';
+    $file = str_replace('\\', '/', $class) . '.php';
 
     if (is_file($file)) {
         require_once $file;
@@ -21,7 +21,7 @@ spl_autoload_register(function ($class) {
 /** @var \System\Storage\StorageInterface $storage */
 $storage = \System\Di\Di::getInstance()->getShared('system.storage');
 $driver = new \System\Storage\Drivers\StorageMySqlDriver();
-$driver->setTableName('test_table');
+$driver->setTableName('test');
 $storage->setDriver($driver);
-$s = $storage->get(['id' => 2, 'name' => 'coa'], [], 0, [['id', 'identifikacioni_broj'], ['name', 'ime'], 'dummy']);
-var_dump($s->getField('dummy'));
+$s = $storage->insert(['name' => 'coa psy']);
+var_dump($s);

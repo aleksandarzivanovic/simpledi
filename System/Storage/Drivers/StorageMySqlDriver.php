@@ -19,23 +19,22 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
     private $queryBuilder;
 
     /**
-     * @param  array                  $criteria
-     * @param  array                  $order
-     * @param  int                    $offset
-     * @param  array                  $fields
+     * @param  array $criteria
+     * @param  array $order
+     * @param  int $offset
+     * @param  array $fields
      * @return StorageResultInterface result
      */
     public function get(array $criteria, array $order = [], $offset = 0, array $fields = [])
     {
         $query = $this->queryBuilder
-                    ->select($fields)
-                    ->from($this->tableName)
-                    ->where($criteria)
-                    ->setLimit(1)
-                    ->setOffset($offset)
-                    ->build()
-                    ->getQuery()
-            ;
+            ->select($fields)
+            ->from($this->tableName)
+            ->where($criteria)
+            ->setLimit(1)
+            ->setOffset($offset)
+            ->build()
+            ->getQuery();
 
         if (empty($query)) {
             throw new \RuntimeException('Query builder failed to build query.');
@@ -45,10 +44,11 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
     }
 
     /**
-     * @param  array                    $criteria
-     * @param  array                    $order
-     * @param  int                      $offset
-     * @param  int                      $limit
+     * @param array $criteria
+     * @param array $order
+     * @param int $offset
+     * @param int $limit
+     * @param array $fields
      * @return StorageResultInterface[] array of results
      */
     public function getAll(array $criteria, array $order = [], $limit = null, $offset = 0, array $fields = [])
@@ -62,16 +62,24 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
      */
     public function insert(array $data)
     {
-        // TODO: Implement insert() method.
+        $query = $this->queryBuilder->insert($data)->into($this->tableName)->build()->getQuery();
+        var_dump($query);
+        $this->db->query($query);
+
+        return $this->db->insert_id;
     }
 
     /**
-     * @param  array     $data
-     * @return int[]|int array of inserted ids or number of affected rows
+     * @param array $fields
+     * @param array $values
+     * @return int[]|int number of affected rows
      */
-    public function insertAll(array $data)
+    public function insertAll(array $fields, array $values)
     {
-        // TODO: Implement insertAll() method.
+        $query = $this->queryBuilder->insert($fields, $values)->into($this->tableName);
+        $this->db->query($query);
+
+        return $this->db->affected_rows;
     }
 
     /**
@@ -110,7 +118,7 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
     }
 
     /**
-     * @param  string                            $tableName
+     * @param  string $tableName
      * @return StorageMySqlDriverInterface|$this
      */
     public function setTableName($tableName)
@@ -129,7 +137,7 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
         $parameters = $this->getParameters();
 
         if (false == isset($parameters[$this->getName()])) {
-            throw new \RuntimeException("Unknown driver ".$this->getName());
+            throw new \RuntimeException("Unknown driver " . $this->getName());
         }
 
         $this->connect($parameters[$this->getName()]);
@@ -137,7 +145,7 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
 
     /**
      *
-     * @param  array             $parameters
+     * @param  array $parameters
      * @throws \RuntimeException
      */
     private function connect(array $parameters)

@@ -38,6 +38,7 @@ class Storage implements StorageInterface
     public function get(array $criteria, array $order = [], $offset = 0, array $fields = [])
     {
         $result = $this->driver->get($criteria, $order, $offset, $fields);
+
         $this->validateResult($result, 'get');
 
         return $result;
@@ -54,6 +55,7 @@ class Storage implements StorageInterface
     public function getAll(array $criteria, array $order = [], $limit = null, $offset = 0, array $fields = [])
     {
         $results = $this->driver->getAll($criteria, $order, $offset, $limit);
+
         foreach ($results as $result) {
             $this->validateResult($result, 'getAll');
         }
@@ -74,9 +76,9 @@ class Storage implements StorageInterface
      * @param  array     $data
      * @return int[]|int array of inserted ids or number of affected rows
      */
-    public function insertAll(array $data)
+    public function insertAll(array $fields, array $values)
     {
-        return $this->driver->insertAll($data);
+        return $this->driver->insertAll($fields, $values);
     }
 
     /**

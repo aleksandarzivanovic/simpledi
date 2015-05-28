@@ -10,37 +10,50 @@ interface StorageMySqlQueryBuilderInterface
     const QUERY_TYPE_DELETE = 'delete';
 
     /**
-     * @param  string                                  $tableName
+     * @param  string $tableName
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function from($tableName);
 
     /**
-     * @param  array                                   $fields
+     * @param  string $tableName
+     * @return StorageMySqlQueryBuilderInterface|$this
+     */
+    public function into($tableName);
+
+    /**
+     * @param  array $fields
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function select(array $fields = []);
 
     /**
-     * @param  array                                   $criteria
+     * @param array $values
+     * @param array $multiple
+     * @return StorageMySqlQueryBuilderInterface|$this
+     */
+    public function insert(array $values, array $multiple = []);
+
+    /**
+     * @param  array $criteria
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function where(array $criteria);
 
     /**
-     * @param  array                                   $criteria
+     * @param  array $criteria
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function whereNot(array $criteria);
 
     /**
-     * @param  int                                     $limit
+     * @param  int $limit
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function setLimit($limit);
 
     /**
-     * @param  int                                     $offset
+     * @param  int $offset
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function setOffset($offset);

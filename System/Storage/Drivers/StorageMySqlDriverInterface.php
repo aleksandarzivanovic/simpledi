@@ -6,7 +6,7 @@ interface StorageMySqlDriverInterface extends StorageDriverInterface
 {
     /**
      * @param  string                 $tableName
-     * @return StorageInterface|$this
+     * @return StorageMySqlDriverInterface|$this
      */
     public function setTableName($tableName);
 }
