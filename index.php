@@ -23,5 +23,5 @@ $storage = \System\Di\Di::getInstance()->getShared('system.storage');
 $driver = new \System\Storage\Drivers\StorageMySqlDriver();
 $driver->setTableName('test');
 $storage->setDriver($driver);
-$s = $storage->insert(['name' => 'coa psy']);
+$s = $storage->insertAll(['name'],[['coa psy'], ['atesd']]);
 var_dump($s);

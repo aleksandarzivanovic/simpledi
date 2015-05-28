@@ -76,7 +76,7 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
      */
     public function insertAll(array $fields, array $values)
     {
-        $query = $this->queryBuilder->insert($fields, $values)->into($this->tableName);
+        $query = $this->queryBuilder->insert($fields, $values)->into($this->tableName)->build()->getQuery();
         $this->db->query($query);
 
         return $this->db->affected_rows;
