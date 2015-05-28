@@ -210,7 +210,7 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
         }
 
         if ($this->limit) {
-            $query .= " LIMIT {$this->offset}, $this->limit";
+            $query .= " LIMIT {$this->offset}, {$this->limit}";
         }
 
         return $query;

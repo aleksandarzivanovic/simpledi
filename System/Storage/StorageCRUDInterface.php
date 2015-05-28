@@ -8,7 +8,6 @@ interface StorageCRUDInterface
      * @param  array                  $criteria
      * @param  array                  $order
      * @param  int                    $offset
-     * @param  int                    $limit
      * @param  array                  $fields
      * @return StorageResultInterface result
      */

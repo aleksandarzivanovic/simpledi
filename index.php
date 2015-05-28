@@ -17,11 +17,4 @@ spl_autoload_register(function ($class) {
     }
 });
 
-//App::init();
-/** @var \System\Storage\StorageInterface $storage */
-$storage = \System\Di\Di::getInstance()->getShared('system.storage');
-$driver = new \System\Storage\Drivers\StorageMySqlDriver();
-$driver->setTableName('test_table');
-$storage->setDriver($driver);
-$s = $storage->get(['id' => 2, 'name' => 'coa'], [], 0, [['id', 'identifikacioni_broj'], ['name', 'ime'], 'dummy']);
-var_dump($s->getField('dummy'));
+App::init();
