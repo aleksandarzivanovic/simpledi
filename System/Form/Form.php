@@ -11,21 +11,21 @@ class Form
     private $name;
 
     /** @var array */
-    private $fields = array();
+    private $fields = [];
 
     /** @var array */
-    private $validationFields = array();
+    private $validationFields = [];
 
     /** @var bool */
     private $error = false;
 
     /** @var array */
-    private $attr = array();
+    private $attr = [];
 
     /** @var array */
-    private $method = array();
+    private $method = [];
 
-    /** @var stdClass */
+    /** @var \stdClass */
     private $model;
 
     private $snippets = array(
@@ -37,11 +37,12 @@ class Form
      * @param $name
      * @param array $fields
      * @param int $method
+     * @throws \RuntimeException
      */
     public function __construct($name, array $fields, $method = self::METHOD_POST)
     {
         if (empty($name) || false === is_string($name)) {
-            throw new RuntimeException('Form name must be defined and must be string.');
+            throw new \RuntimeException('Form name must be defined and must be string.');
         }
 
         $this->name = $name;
@@ -87,12 +88,13 @@ class Form
     }
 
     /**
+     * @param bool $createModel
      * @return bool
      */
     public function validate($createModel = true)
     {
         $input = filter_input_array(INPUT_POST);
-        $this->validationFields = isset($input["form_{$this->name}"]) ? $input["form_{$this->name}"] : array();
+        $this->validationFields = isset($input["form_{$this->name}"]) ? $input["form_{$this->name}"] : [];
 
         if (empty($this->validationFields)) {
             return false;
@@ -127,7 +129,7 @@ class Form
     }
 
     /**
-     * @return stdClass
+     * @return \stdClass
      */
     public function getModel()
     {
@@ -197,6 +199,8 @@ class Form
      */
     private function renderAll()
     {
+        $fields = [];
+
         foreach ($this->fields as $field => $data) {
             $fields[$field] = $this->renderField($field);
         }
@@ -213,7 +217,7 @@ class Form
     {
         $snippet = $data['type'] == 'textarea' ? $this->snippets['textarea'] : $this->snippets['input'];
 
-        $replaces = array();
+        $replaces = [];
 
         $this->setReplaceRequired($replaces, $data);
         $this->setReplaceValue($replaces, $data);
@@ -384,13 +388,13 @@ class Form
 
     private function createModel()
     {
-        $this->model = new stdClass();
+        $this->model = new \stdClass();
 
         foreach ($this->fields as $field => $data) {
             if (empty($data['collection'])) {
                 $this->model->{$field} = $this->escapeValue($data['value']);
             } else {
-                $this->model->{$field} = array();
+                $this->model->{$field} = [];
 
                 foreach ($data['fields'] as $collectionField) {
                     $this->model->{$field}[] = $this->escapeValue($collectionField['value']);
@@ -406,8 +410,8 @@ class Form
      */
     private function escapeValue($value)
     {
-        $search = array("\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a");
-        $replace = array("\\\\","\\0","\\n", "\\r", "\'", '\"', "\\Z");
+        $search = ["\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a"];
+        $replace = ["\\\\","\\0","\\n", "\\r", "\'", '\"', "\\Z"];
 
         return str_replace($search, $replace, $value);
     }

@@ -7,7 +7,7 @@ use System\Form\FormValidator;
 class InList extends FormValidator
 {
     /** @var array */
-    private $items = array();
+    private $items = [];
 
     /** @var bool */
     private $strict = false;
