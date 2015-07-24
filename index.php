@@ -18,10 +18,11 @@ spl_autoload_register(function ($class) {
 });
 
 //App::init();
-/** @var \System\Storage\StorageInterface $storage */
+/* @var $storage System\Storage\StorageInterface */
 $storage = \System\Di\Di::getInstance()->getShared('system.storage');
 $driver = new \System\Storage\Drivers\StorageMySqlDriver();
-$driver->setTableName('test');
 $storage->setDriver($driver);
-$s = $storage->insertAll(['name'],[['coa psy'], ['atesd']]);
-var_dump($s);
+$storage->setRepository('users');
+
+$s = $storage->delete(['username'=>'coa'], ['username'=>'pinkman']);
+var_dump($storage->getQuery());

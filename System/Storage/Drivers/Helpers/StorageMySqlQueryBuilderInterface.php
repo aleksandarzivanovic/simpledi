@@ -35,6 +35,13 @@ interface StorageMySqlQueryBuilderInterface
     public function insert(array $values, array $multiple = []);
 
     /**
+     * @param array $data
+     * @param array $notData
+     * @return $this
+     */
+    public function delete(array $data, array $notData = []);
+
+    /**
      * @param  array $criteria
      * @return StorageMySqlQueryBuilderInterface|$this
      */
@@ -45,6 +52,12 @@ interface StorageMySqlQueryBuilderInterface
      * @return StorageMySqlQueryBuilderInterface|$this
      */
     public function whereNot(array $criteria);
+
+    /**
+     * @param array $order
+     * @return StorageMySqlQueryBuilderInterface|$this
+     */
+    public function setOrder(array $order = []);
 
     /**
      * @param  int $limit

@@ -3,28 +3,18 @@
 namespace System\Storage\Drivers\Helpers\MySqlQueryBuilders;
 
 
-class InsertQueryBuilder
+class InsertQueryBuilder extends QueryBuilderCore
 {
-    /** @var string */
-    private $tableName;
-
     /**
-     * @param string $tableName
-     * @param array $values
-     * @param array $multiple
      * @return string
      */
-    public function buildQuery($tableName, array $values, array $multiple = [])
-    {
-        $this->setTableName($tableName);
-
-        return $this->buildValues($values, $multiple);
-    }
-
-    private function buildValues(array $values, array $multiple = [])
+    protected function buildQuery()
     {
         $query = "INSERT INTO `{$this->tableName}` ";
-
+        
+        $values = $this->attr(QueryBuilderInterface::PARAMETER_VALUES);
+        $multiple = $this->attr(QueryBuilderInterface::PARAMETER_MULTIPLE);
+        
         if (empty($multiple)) {
             $query .= $this->buildValuesForSingle($values);
         } else {
@@ -56,12 +46,11 @@ class InsertQueryBuilder
         return '(`' . implode('`,`', $fields) . '`) VALUES (' . implode('),(', $values) . ')';
     }
 
-    private function setTableName($tableName)
-    {
-        if (empty($tableName)) {
-            throw new \RuntimeException('Table name may not be empty.');
-        }
-
-        $this->tableName = $tableName;
+    public function getSupportedAttributes() {
+        return [
+            QueryBuilderInterface::PARAMETER_VALUES => 'array',
+            QueryBuilderInterface::PARAMETER_MULTIPLE => 'array',
+        ];
     }
+
 }

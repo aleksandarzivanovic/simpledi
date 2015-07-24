@@ -2,7 +2,9 @@
 
 namespace System\Storage\Drivers\Helpers;
 
+use System\Storage\Drivers\Helpers\MySqlQueryBuilders\DeleteQueryBuilder;
 use System\Storage\Drivers\Helpers\MySqlQueryBuilders\InsertQueryBuilder;
+use System\Storage\Drivers\Helpers\MySqlQueryBuilders\QueryBuilderInterface;
 use System\Storage\Drivers\Helpers\MySqlQueryBuilders\SelectQueryBuilder;
 
 class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
@@ -30,6 +32,9 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
 
     /** @var int */
     private $offset = 0;
+
+    /** @var array */
+    private $order = [];
 
     /** @var string */
     private $queryType;
@@ -80,7 +85,7 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
 
     public function select(array $fields = [])
     {
-        $this->queryType = self::QUERY_TYPE_SELECT;
+        $this->queryType = StorageMySqlQueryBuilderInterface::QUERY_TYPE_SELECT;
 
         foreach ($fields as $index => $field) {
             if (is_array($field)) {
@@ -97,7 +102,7 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
 
     public function insert(array $values, array $multiple = [])
     {
-        $this->queryType = self::QUERY_TYPE_INSERT;
+        $this->queryType = StorageMySqlQueryBuilderInterface::QUERY_TYPE_INSERT;
 
         $this->values = $values;
         $this->multiple = $multiple;
@@ -105,8 +110,27 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
         return $this;
     }
 
+    public function delete(array $data = [], array $notData = [])
+    {
+        if (false === empty($data)) {
+            $this->where($data);
+        }
+
+        if (false === empty($notData)) {
+            $this->whereNot($notData);
+        }
+
+        $this->queryType = StorageMySqlQueryBuilderInterface::QUERY_TYPE_DELETE;
+
+        return $this;
+    }
+
     public function where(array $criteria)
     {
+        $this->criteria['where'] = [];
+
+
+
         foreach ($criteria as $column => $value) {
             $this->criteria['where'][$column] = $this->cleanCriteria($value);
         }
@@ -141,6 +165,17 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
     }
 
     /**
+     * @param array $order
+     * @return $this
+     */
+    public function setOrder(array $order = [])
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
      * @param  int $limit
      * @return StorageMySqlQueryBuilderInterface|$this
      */
@@ -162,20 +197,24 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
         return $this;
     }
 
-    public function build($limit = 0, $offset = 0)
+    /**
+     * @return $this
+     */
+    public function build()
     {
         $this->validateTableName();
 
         switch ($this->queryType) {
-            case self::QUERY_TYPE_SELECT:
+            case StorageMySqlQueryBuilderInterface::QUERY_TYPE_SELECT:
                 $this->query = $this->buildSelectQuery();
                 break;
-            case self::QUERY_TYPE_INSERT:
+            case StorageMySqlQueryBuilderInterface::QUERY_TYPE_INSERT:
                 $this->query = $this->buildInsertQuery();
                 break;
-            case self::QUERY_TYPE_UPDATE:
+            case StorageMySqlQueryBuilderInterface::QUERY_TYPE_UPDATE:
                 break;
-            case self::QUERY_TYPE_DELETE:
+            case StorageMySqlQueryBuilderInterface::QUERY_TYPE_DELETE:
+                $this->query = $this->buildDeleteQuery();
                 break;
             default:
                 throw new \RuntimeException("Unknown query type '{$this->queryType}'");
@@ -186,6 +225,9 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getQuery()
     {
         return $this->query;
@@ -196,14 +238,52 @@ class StorageMySqlQueryBuilder implements StorageMySqlQueryBuilderInterface
      */
     private function buildSelectQuery()
     {
-        return (new SelectQueryBuilder())->buildQuery($this->tableName, $this->criteria, $this->selectFields, $this->limit, $this->offset);
+        $queryBuilder = new SelectQueryBuilder();
+        $queryBuilder->setTable($this->tableName);
+        $query = $queryBuilder->build([
+            QueryBuilderInterface::PARAMETER_CRITERIA => $this->criteria,
+            QueryBuilderInterface::PARAMETER_FIELDS => $this->selectFields,
+            QueryBuilderInterface::PARAMETER_ORDER => $this->order,
+            QueryBuilderInterface::PARAMETER_LIMIT => $this->limit,
+            QueryBuilderInterface::PARAMETER_OFFSET => $this->offset,
+        ]);
+        
+        return $query;
     }
 
+    /**
+     * 
+     * @return string
+     */
     private function buildInsertQuery()
     {
-        return (new InsertQueryBuilder())->buildQuery($this->tableName, $this->values, $this->multiple);
+        $queryBuilder = new InsertQueryBuilder();
+        $queryBuilder->setTable($this->tableName);
+        $query = $queryBuilder->build([
+            QueryBuilderInterface::PARAMETER_VALUES  => $this->values,
+            QueryBuilderInterface::PARAMETER_MULTIPLE => $this->multiple,
+        ]);
+        
+        return $query;
     }
 
+    /**
+     * @return string
+     */
+    private function buildDeleteQuery()
+    {
+        $queryBuilder = new DeleteQueryBuilder();
+        $queryBuilder->setTable($this->tableName);
+        $query = $queryBuilder->build([
+            QueryBuilderInterface::PARAMETER_CRITERIA => $this->criteria,
+        ]);
+
+        return $query;
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
     private function validateTableName()
     {
         if (empty($this->tableName)) {

@@ -14,20 +14,31 @@ App::get('/users/profile/{id}/{action}', function (ResponseInterface $response, 
 });
 
 App::get('/users/profile/{id}/view', function (ResponseInterface $response, $id) {
+
+    $one = new \stdClass();
+    $one->type = 'Wood';
+    $one->position = 'Forest';
+
+    $two = new \stdClass();
+    $two->type = 'Sand';
+    $two->position = 'Desert';
+
+    $three = new \stdClass();
+    $three->type = 'Water';
+    $three->position = 'Ocean';
+
     return $response->render('Views/Partial/child.html', [
-        'array' => [
-            [
-                'type' => 'Wood',
-                'position' => 'Forest',
-            ],
-            [
-                'type' => 'Sand',
-                'position' => 'Desert',
-            ],
-            [
-                'type' => 'Water',
-                'position' => 'Ocean',
-            ],
-        ],
+                'array' => [
+                    [
+                        'type' => 'id',
+                        'position' => $id,
+                    ],
+                    [
+                        'type' => 'asdasdasd',
+                        'position' => 'testing',
+                    ],
+                    $one,
+                    $two,
+                ],
     ]);
 });

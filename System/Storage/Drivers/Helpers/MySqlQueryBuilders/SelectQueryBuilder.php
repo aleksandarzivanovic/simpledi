@@ -2,17 +2,18 @@
 
 namespace System\Storage\Drivers\Helpers\MySqlQueryBuilders;
 
-class SelectQueryBuilder
+class SelectQueryBuilder extends QueryBuilderCore
 {
 
-    /** @var string */
-    private $tableName;
 
     /** @var array */
     private $criteria = [];
 
     /** @var array */
     private $fields = [];
+
+    /** @var array */
+    private $order = [];
 
     /** @var null|int */
     private $limit = null;
@@ -21,24 +22,30 @@ class SelectQueryBuilder
     private $offset = 0;
 
     /**
-     * @param $tableName
-     * @param array $criteria
-     * @param array $fields
-     * @param null $limit
-     * @param int $offset
      * @return string
      */
-    public function buildQuery($tableName, array $criteria = [], array $fields = [], $limit = null, $offset = 0)
+    protected function buildQuery()
     {
-        $this->prepareQueryBuilder($tableName, $criteria, $fields, $limit, $offset);
+        $this->prepareQueryBuilder(
+                $this->attr(QueryBuilderInterface::PARAMETER_CRITERIA),
+                $this->attr(QueryBuilderInterface::PARAMETER_FIELDS),
+                $this->attr(QueryBuilderInterface::PARAMETER_ORDER),
+                $this->attr(QueryBuilderInterface::PARAMETER_LIMIT),
+                $this->attr(QueryBuilderInterface::PARAMETER_OFFSET)
+            );
 
         $builtCriteria = $this->buildCriteria();
+        $builtOrder = $this->buildOrder();
         $builtFields = $this->buildFields();
 
         $query = "SELECT {$builtFields} FROM `{$this->tableName}`";
 
         if (false == empty($builtCriteria)) {
             $query .= " WHERE {$builtCriteria}";
+        }
+
+        if (false == empty($builtOrder)) {
+            $query .= " ORDER BY {$builtOrder}";
         }
 
         if ($this->limit) {
@@ -49,20 +56,44 @@ class SelectQueryBuilder
     }
 
     /**
-     * @param $tableName
      * @param array $criteria
      * @param array $fields
+     * @param array $order
      * @param null $limit
      * @param int $offset
      */
-    private function prepareQueryBuilder($tableName, array $criteria = [], array $fields = [], $limit = null, $offset = 0)
+    private function prepareQueryBuilder(array $criteria = [], array $fields = [], array $order = [], $limit = null, $offset = 0)
     {
-        $this->setTableName($tableName);
         $this->setCriteria($criteria);
         $this->setFields($fields);
+        $this->setOrder($order);
 
         $this->limit = $limit;
         $this->offset = $offset;
+    }
+
+    /**
+     * @return string
+     */
+    private function buildOrder()
+    {
+        if (empty ($this->order)) {
+            return '';
+        }
+
+        $order = [];
+
+        foreach ($this->order as $field => $direction) {
+            $direction = strtoupper($direction);
+
+            if (strcmp($direction, 'ASC') && strcmp($direction, 'DESC')) {
+                throw new \RuntimeException("Unknown order direction '{$direction}'");
+            }
+
+            $order[] = "`{$field}` {$direction}";
+        }
+
+        return implode(', ', $order);
     }
 
     /**
@@ -135,14 +166,25 @@ class SelectQueryBuilder
     }
 
     /**
-     * @param $tableName
+     * @param array $order
+     * @return string
      */
-    private function setTableName($tableName)
+    private function setOrder(array $order = [])
     {
-        if (empty($tableName)) {
-            throw new \RuntimeException('Table name may not be empty.');
-        }
+        $this->order = $order;
 
-        $this->tableName = $tableName;
+        return $this;
     }
+
+    public function getSupportedAttributes()
+    {
+        return [
+            QueryBuilderInterface::PARAMETER_CRITERIA => 'array',
+            QueryBuilderInterface::PARAMETER_FIELDS => 'array',
+            QueryBuilderInterface::PARAMETER_LIMIT => 'number',
+            QueryBuilderInterface::PARAMETER_OFFSET => 'number',
+            QueryBuilderInterface::PARAMETER_ORDER => 'array',
+        ];
+    }
+
 }

@@ -12,4 +12,11 @@ interface StorageDriverInterface extends StorageCRUDInterface
     public function getName();
 
     public function prepare();
+    
+    public function setRepository($name);
+    
+    /**
+     * @return string built query
+     */
+    public function getQuery();
 }

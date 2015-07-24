@@ -7,7 +7,7 @@ use System\Storage\Drivers\Helpers\StorageMySqlQueryBuilderInterface;
 use System\Storage\StorageResult;
 use System\Storage\StorageResultInterface;
 
-class StorageMySqlDriver implements StorageMySqlDriverInterface
+class StorageMySqlDriver implements StorageDriverInterface
 {
     /** @var string */
     private $tableName;
@@ -19,11 +19,11 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
     private $queryBuilder;
 
     /**
-     * @param  array $criteria
-     * @param  array $order
-     * @param  int $offset
-     * @param  array $fields
-     * @return StorageResultInterface result
+     * @param array $criteria
+     * @param array $order
+     * @param int $offset
+     * @param array $fields
+     * @return StorageResult
      */
     public function get(array $criteria, array $order = [], $offset = 0, array $fields = [])
     {
@@ -31,6 +31,7 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
             ->select($fields)
             ->from($this->tableName)
             ->where($criteria)
+            ->setOrder($order)
             ->setLimit(1)
             ->setOffset($offset)
             ->build()
@@ -46,24 +47,34 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
     /**
      * @param array $criteria
      * @param array $order
-     * @param int $offset
-     * @param int $limit
      * @param array $fields
-     * @return StorageResultInterface[] array of results
+     * @return StorageResult
      */
-    public function getAll(array $criteria, array $order = [], $limit = null, $offset = 0, array $fields = [])
+    public function getAll(array $criteria, array $order = [], array $fields = [])
     {
-        // TODO: Implement getAll() method.
+        $query = $this->queryBuilder
+                ->select($fields)
+                ->from($this->tableName)
+                ->where($criteria)
+                ->setOrder($order)
+                ->build()
+                ->getQuery();
+        
+        if (empty($query)) {
+            throw new \RuntimeException('Query builder failed to build query.');
+        }
+        
+        return new StorageResult($this->db->query($query));
     }
 
     /**
-     * @param  array $data
-     * @return int   Insert id or affected rows
+     * @param array $data
+     * @return mixed
      */
     public function insert(array $data)
     {
         $query = $this->queryBuilder->insert($data)->into($this->tableName)->build()->getQuery();
-        var_dump($query);
+        
         $this->db->query($query);
 
         return $this->db->insert_id;
@@ -104,9 +115,12 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
      * @param  array $data
      * @return int   number of deleted rows
      */
-    public function delete(array $data)
+    public function delete(array $data, array $not = [])
     {
-        // TODO: Implement delete() method.
+        $query = $this->queryBuilder->delete($data, $not)->from($this->tableName)->build()->getQuery();
+        $this->db->query($query);
+
+        return $this->db->affected_rows;
     }
 
     /**
@@ -115,21 +129,6 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
     public function getName()
     {
         return 'mysql';
-    }
-
-    /**
-     * @param  string $tableName
-     * @return StorageMySqlDriverInterface|$this
-     */
-    public function setTableName($tableName)
-    {
-        if (empty($tableName)) {
-            throw new \RuntimeException('Table name may not be empty');
-        }
-
-        $this->tableName = $tableName;
-
-        return $this;
     }
 
     public function prepare()
@@ -156,7 +155,7 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
             throw new \RuntimeException("Unable to connect to database. Reason[{$this->db->errno}]:{$this->db->error}");
         }
 
-        $this->queryBuilder = new StorageMySqlQueryBuilder($this->db, $this->tableName);
+        $this->queryBuilder = new StorageMySqlQueryBuilder($this->db);
     }
 
     /**
@@ -178,4 +177,19 @@ class StorageMySqlDriver implements StorageMySqlDriverInterface
 
         return $data;
     }
+
+    public function setRepository($name) {
+        if (empty($name)) {
+            throw new \RuntimeException('Table name may not be empty');
+        }
+
+        $this->tableName = $name;
+
+        return $this;
+    }
+
+    public function getQuery() {
+        return $this->queryBuilder->getQuery();
+    }
+
 }
