@@ -21,13 +21,23 @@ class Storage implements StorageInterface
             $class = get_class($driver);
             throw new \RuntimeException("Driver name for '{$class}' may not be empty.");
         }
-
+        
         $this->driver = $driver;
         $this->driver->prepare();
 
         return $this;
     }
 
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function setRepository($name) {
+        $this->driver->setRepository($name);
+
+        return $this;
+    }
+        
     /**
      * @param  array                  $criteria
      * @param  array                  $order
@@ -38,22 +48,22 @@ class Storage implements StorageInterface
     public function get(array $criteria, array $order = [], $offset = 0, array $fields = [])
     {
         $result = $this->driver->get($criteria, $order, $offset, $fields);
+
         $this->validateResult($result, 'get');
 
         return $result;
     }
 
     /**
-     * @param  array                    $criteria
-     * @param  array                    $order
-     * @param  int                      $offset
-     * @param  int                      $limit
-     * @param  array                    $fields
-     * @return StorageResultInterface[] array of results
+     * @param array $criteria
+     * @param array $order
+     * @param array $fields
+     * @return StorageResultInterface[]
      */
-    public function getAll(array $criteria, array $order = [], $limit = null, $offset = 0, array $fields = [])
+    public function getAll(array $criteria, array $order = [], array $fields = [])
     {
-        $results = $this->driver->getAll($criteria, $order, $offset, $limit);
+        $results = $this->driver->getAll($criteria, $order, $fields);
+        
         foreach ($results as $result) {
             $this->validateResult($result, 'getAll');
         }
@@ -62,8 +72,8 @@ class Storage implements StorageInterface
     }
 
     /**
-     * @param  array $data
-     * @return int   Insert id or affected rows
+     * @param array $data
+     * @return int
      */
     public function insert(array $data)
     {
@@ -71,12 +81,13 @@ class Storage implements StorageInterface
     }
 
     /**
-     * @param  array     $data
-     * @return int[]|int array of inserted ids or number of affected rows
+     * @param array $fields
+     * @param array $values
+     * @return int|\int[]
      */
-    public function insertAll(array $data)
+    public function insertAll(array $fields, array $values)
     {
-        return $this->driver->insertAll($data);
+        return $this->driver->insertAll($fields, $values);
     }
 
     /**
@@ -98,12 +109,13 @@ class Storage implements StorageInterface
     }
 
     /**
-     * @param  array $data
-     * @return int   number of deleted rows
+     * @param array $data
+     * @param array $notData
+     * @return int
      */
-    public function delete(array $data)
+    public function delete(array $data = [], array $notData = [])
     {
-        return $this->driver->delete($data);
+        return $this->driver->delete($data, $notData);
     }
 
     private function validateResult($result, $method)
@@ -113,4 +125,13 @@ class Storage implements StorageInterface
             throw new \RuntimeException("Driver '{$driverName}' method {$method} should return 'StorageResult'");
         }
     }
+
+    /**
+     * 
+     * @return string
+     */
+    public function getQuery() {
+        return $this->driver->getQuery();
+    }
+
 }

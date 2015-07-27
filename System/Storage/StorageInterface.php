@@ -11,4 +11,16 @@ interface StorageInterface extends StorageCRUDInterface
      * @return StorageInterface|$this
      */
     public function setDriver(StorageDriverInterface $driver);
+    
+    /**
+     * 
+     * @param string $name
+     * @return StorageInterface
+     */
+    public function setRepository($name);
+    
+    /**
+     * @return string
+     */
+    public function getQuery();
 }

@@ -64,6 +64,20 @@ class Template implements TemplateInterface
         $this->parseVariables();
     }
 
+    private function prepareVariables(array $variables)
+    {
+        foreach ($variables as $key => $variable) {
+            if (is_object($variable)) {
+                $variables[$key] = json_decode(json_encode($variable), true);
+            } else if (is_array($variable)) {
+                $variables[$key] = $this->prepareVariables($variable);
+            }
+        }
+        
+        return $variables;
+    }
+
+
     /**
      * @param array $values
      *
@@ -72,7 +86,9 @@ class Template implements TemplateInterface
     public function render(array $values = [])
     {
         if ($this->cached && is_file($this->cached)) {
+            $values = $this->prepareVariables($values);
             extract($values);
+            
             include $this->cached;
 
             return true;
@@ -82,11 +98,7 @@ class Template implements TemplateInterface
             $this->parent->setAreas($this->areas);
             $this->parent->setVariables($this->variables);
 
-            if ($this->child) {
-                $child = $this->child;
-            } else {
-                $child = $this->file;
-            }
+            $child = $this->child ? $this->child : $this->file;
 
             return $this->parent->render($values, $child);
         }
@@ -387,7 +399,10 @@ class Template implements TemplateInterface
                 'id' => uniqid('for_', true),
                 'snippet' => $currentSnippet,
             ];
-
+            
+            
+            
+            var_dump($d['array']);
             $this->compileTemplate($d);
 
             $data[] = $d;
@@ -395,7 +410,7 @@ class Template implements TemplateInterface
 
         return $data;
     }
-
+    
     private function compileTemplate(&$method)
     {
         $body = $method['body'];
@@ -423,7 +438,7 @@ class Template implements TemplateInterface
             if (empty($extracted)) {
                 $variable = '<?php echo $'.$v.';?>';
             } else {
-                $variable = '<?php echo $'.$v.'["'.implode('"]["', $extracted).'"];?>';
+                $variable = '<?php echo $'.$v.'["'.implode('"]["', $extracted).'"];?>';   
             }
 
             $replaces[$matches[0][$index]] = $variable;
