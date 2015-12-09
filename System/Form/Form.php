@@ -2,8 +2,12 @@
 
 namespace System\Form;
 
+use System\Di\Di;
+use System\Hydrator\Hydrator;
+
 class Form
 {
+
     const METHOD_POST = INPUT_POST;
     const METHOD_GET = INPUT_GET;
 
@@ -25,9 +29,11 @@ class Form
     /** @var array */
     private $method = [];
 
+    /** @var string */
+    private $action;
+
     /** @var \stdClass */
     private $model;
-
     private $snippets = array(
         'input' => '{errors}<input name="{name}" type="{type}" value="{value}" {required} {attr} />',
         'textarea' => '{errors}<textarea name="{name}" {attr} {required}>{value}</textarea>',
@@ -39,13 +45,14 @@ class Form
      * @param int $method
      * @throws \RuntimeException
      */
-    public function __construct($name, array $fields, $method = self::METHOD_POST)
+    public function __construct($name, array $fields, $model = null, $method = self::METHOD_POST, $action = null)
     {
         if (empty($name) || false === is_string($name)) {
             throw new \RuntimeException('Form name must be defined and must be string.');
         }
 
         $this->name = $name;
+        $this->model = $model;
 
         foreach ($fields as $field => $value) {
             if (empty($value['type'])) {
@@ -67,6 +74,12 @@ class Form
         }
 
         $this->method['identifier'] = $method;
+
+        if (empty($action)) {
+            $this->action = Di::getInstance()->getShared('system.router')->getCurrentRoute();
+        } else {
+            $this->action = $action;
+        }
     }
 
     /**
@@ -93,7 +106,7 @@ class Form
      */
     public function validate($createModel = true)
     {
-        $input = filter_input_array(INPUT_POST);
+        $input = filter_input_array($this->method['type'] == 'get' ? INPUT_GET : INPUT_POST);
         $this->validationFields = isset($input["form_{$this->name}"]) ? $input["form_{$this->name}"] : [];
 
         if (empty($this->validationFields)) {
@@ -141,7 +154,11 @@ class Form
      */
     public function open()
     {
-        return "<form method=\"{$this->method['type']}\" name=\"form_{$this->name}\">";
+        if ($this->method['type'] == 'post') {
+            return "<form action=\"{$this->action}\" method=\"{$this->method['type']}\" name=\"form_{$this->name}\">";
+        } else {
+            return "<form method=\"{$this->method['type']}\" name=\"form_{$this->name}\"><input type=\"hidden\" name=\"route\" value=\"{$this->action}\" />";
+        }
     }
 
     /**
@@ -188,7 +205,6 @@ class Form
             foreach ($this->fields[$field]['fields'] as $index => $collectionField) {
                 $code .= $this->generateFieldCode($field, $collectionField);
             }
-
         }
 
         return $code;
@@ -205,7 +221,7 @@ class Form
             $fields[$field] = $this->renderField($field);
         }
 
-        return $this->open() . implode('<br />',  $fields) . $this->close();
+        return $this->open() . implode('<br />', $fields) . $this->close();
     }
 
     /**
@@ -267,6 +283,8 @@ class Form
      */
     private function setReplaceAttr(&$replaces, array $data)
     {
+        $this->attr = [];
+
         if (false === empty($data['attr'])) {
             array_walk($data['attr'], array($this, 'generateAttributes'));
             $replaces['{attr}'] = implode(' ', $this->attr);
@@ -304,7 +322,8 @@ class Form
      * @param string $value
      * @param string $attribute
      */
-    private function generateAttributes($value, $attribute) {
+    private function generateAttributes($value, $attribute)
+    {
         $this->attr[] = "{$attribute}=\"{$value}\"";
     }
 
@@ -374,34 +393,41 @@ class Form
 
             $validator->setValue($value);
 
-            if (false === $validator->validate()) {
-                $this->error = true;
+            if ($validator->validate()) {
+                continue;
+            }
 
-                if (is_null($index)) {
-                    $this->fields[$field]['errors'][] = $validator->getErrorMessage();
-                } else {
-                    $this->fields[$field]['fields'][$index]['errors'][] = $validator->getErrorMessage();
-                }
+            $this->error = true;
+
+            $errorMessage = $validator->errorMessage ? $validator->errorMessage : $validator->getErrorMessage();
+
+            if (is_null($index)) {
+                $this->fields[$field]['errors'][] = $errorMessage;
+            } else {
+                $this->fields[$field]['fields'][$index]['errors'][] = $errorMessage;
             }
         }
     }
 
     private function createModel()
     {
-        $this->model = new \stdClass();
+        $fields = [];
 
         foreach ($this->fields as $field => $data) {
             if (empty($data['collection'])) {
-                $this->model->{$field} = $this->escapeValue($data['value']);
-            } else {
-                $this->model->{$field} = [];
+                $fields[$field] = $this->escapeValue($data['value']);
 
-                foreach ($data['fields'] as $collectionField) {
-                    $this->model->{$field}[] = $this->escapeValue($collectionField['value']);
-                }
+                continue;
+            }
+
+            $this->model->{$field} = [];
+
+            foreach ($data['fields'] as $collectionField) {
+                $fields[$field][] = $this->escapeValue($collectionField['value']);
             }
         }
 
+        $this->model = Hydrator::hydrate($this->model, $fields);
     }
 
     /**
@@ -410,9 +436,10 @@ class Form
      */
     private function escapeValue($value)
     {
-        $search = ["\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a"];
-        $replace = ["\\\\","\\0","\\n", "\\r", "\'", '\"', "\\Z"];
+        $search = ["\\", "\x00", "\n", "\r", "'", '"', "\x1a"];
+        $replace = ["\\\\", "\\0", "\\n", "\\r", "\'", '\"', "\\Z"];
 
         return str_replace($search, $replace, $value);
     }
+
 }

@@ -17,12 +17,4 @@ spl_autoload_register(function ($class) {
     }
 });
 
-//App::init();
-/* @var $storage System\Storage\StorageInterface */
-$storage = \System\Di\Di::getInstance()->getShared('system.storage');
-$driver = new \System\Storage\Drivers\StorageMySqlDriver();
-$storage->setDriver($driver);
-$storage->setRepository('users');
-
-$s = $storage->delete(['username'=>'coa'], ['username'=>'pinkman']);
-var_dump($storage->getQuery());
+App::init();

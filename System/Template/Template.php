@@ -309,6 +309,12 @@ class Template implements TemplateInterface
     {
         $index = explode('.', $key, 2);
 
+        if (is_object($array) && method_exists($array, 'toArray')) {
+            $array = $array->toArray();
+        } else if (is_object($array)) {
+            $array = (array) $array;
+        }
+        
         if (false == isset($array[$index[0]])) {
             throw new \RuntimeException("Key {$index[0]} doesn't exist.");
         }
@@ -400,9 +406,6 @@ class Template implements TemplateInterface
                 'snippet' => $currentSnippet,
             ];
             
-            
-            
-            var_dump($d['array']);
             $this->compileTemplate($d);
 
             $data[] = $d;

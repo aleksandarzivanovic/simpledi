@@ -4,11 +4,24 @@ namespace System\Form;
 
 abstract class FormValidator
 {
+
     /** @var string */
     protected $value;
 
     /** @var Form */
     protected $form;
+
+    /** @var string */
+    public $errorMessage;
+
+    /**
+     * 
+     * @param string $errorMessage
+     */
+    public function __construct($errorMessage = null)
+    {
+        $this->setErrorMessage($errorMessage);
+    }
 
     /**
      * @param string $value
@@ -24,6 +37,15 @@ abstract class FormValidator
     public function setForm(Form $form)
     {
         $this->form = $form;
+    }
+
+    /**
+     * 
+     * @param string $message
+     */
+    public function setErrorMessage($message)
+    {
+        $this->errorMessage = $message;
     }
 
     /**

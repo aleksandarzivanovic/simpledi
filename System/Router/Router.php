@@ -118,6 +118,17 @@ class Router implements RouterInterface
         return $this->routes;
     }
 
+    /**
+     * Returns current route
+     * 
+     * @return string|null
+     */
+    public function getCurrentRoute()
+    {
+        return $this->request->getRequestData('route', Di::getInstance()->getShared('system.http.request.method'));
+    }
+
+
     public function clearRoutes()
     {
         $this->routes = [];
@@ -141,7 +152,7 @@ class Router implements RouterInterface
          * Why? Imagine you have route /user/{id}/{action} and /user/{id}/delete
          * Without this route /user/{id}/delete will be counted as /user/{id}/{action} if it is registered first
          */
-        foreach ($this->routes[$method] as $regex => $value) {
+        foreach ($this->getMethodRoutes($method) as $regex => $value) {
             if ($this->getRequestParameters($regex, $route, $tmpParameters)) {
                 $currentCount = count($tmpParameters);
 
@@ -158,6 +169,17 @@ class Router implements RouterInterface
         $this->parameters = $this->mapParameters($parameters);
     }
 
+    /**
+     * 
+     * Get registered routes for method
+     * 
+     * @param stirng $method
+     */
+    private function getMethodRoutes($method) 
+    {
+        return empty($this->routes[$method]) ? [] : $this->routes[$method];
+    }
+    
     /**
      * @param callable $callback
      * @param array    $parameters

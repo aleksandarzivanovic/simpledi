@@ -1,6 +1,8 @@
 {%parent "Views/Partial/parent.html" %}
 
 {%area content%}
+    {{ form }}
+
     {% for value in array %}
         <p>
             Type: <em>{{ value.type }}</em><br />

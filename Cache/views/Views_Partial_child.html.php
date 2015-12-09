@@ -6,6 +6,8 @@
 </head>
 <body>
     
+    <?php echo $form;?>
+
     <?php foreach ($array as $value) { ?>
     
         <p>
