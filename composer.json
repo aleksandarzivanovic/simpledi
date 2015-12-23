@@ -1,0 +1,8 @@
+{
+    "name": "aleksandarzivanovic/vibe",
+    "description": "Lightweight easy to use PHP framework",
+    "require": {
+        "php": ">=5.5.0",
+        "another-vendor/package": "1.*"
+    }
+}
